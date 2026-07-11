@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 
 const apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8080',
+  defaultValue: 'http://192.168.29.193:9090',
 );
 
 final currencyFormat = NumberFormat.currency(
@@ -1239,7 +1239,7 @@ Future<void> uploadDocumentFlow(BuildContext context, ApiClient api, int vehicle
       },
     );
     if (confirmed != true) return;
-    final result = await FilePicker.platform.pickFiles(withData: false);
+    final result = await FilePicker.pickFiles(withData: false);
     final file = result?.files.single;
     if (file?.path == null) return;
     await api.uploadDocument(
