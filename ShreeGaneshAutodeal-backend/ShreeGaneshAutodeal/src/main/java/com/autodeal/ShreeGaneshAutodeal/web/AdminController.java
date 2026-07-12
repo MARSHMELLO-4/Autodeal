@@ -123,6 +123,13 @@ public class AdminController {
 		return vehicleService.uploadImages(id, files, startOrder, altText);
 	}
 
+	@GetMapping("/vehicles/{id}/images")
+	public List<VehicleImageResponse> getVehicleImages(
+			@PathVariable Long id) {
+
+		return vehicleService.getVehicleImages(id);
+	}
+
 	@GetMapping("/vehicles/{id}/documents")
 	public List<VehicleDocumentResponse> vehicleDocuments(@PathVariable Long id) {
 		return vehicleService.getDocuments(id);

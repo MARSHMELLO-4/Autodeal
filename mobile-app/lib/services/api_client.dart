@@ -130,6 +130,14 @@ class ApiClient {
     }
   }
 
+  Future<List<VehicleImage>> getVehicleImages(int vehicleId) async {
+    final json = await _get('/api/admin/vehicles/$vehicleId/images');
+
+    return asJsonList(json)
+        .map((e) => VehicleImage.fromJson(asJsonMap(e)))
+        .toList();
+  }
+
   Future<void> markSold({
     required int vehicleId,
     required double salePrice,

@@ -16,10 +16,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
-import com.autodeal.ShreeGaneshAutodeal.repository.SaleRecordRepository;
-import com.autodeal.ShreeGaneshAutodeal.repository.VehicleDocumentRepository;
-import com.autodeal.ShreeGaneshAutodeal.repository.VehicleRepository;
-import com.autodeal.ShreeGaneshAutodeal.repository.VehicleSpecifications;
+import com.autodeal.ShreeGaneshAutodeal.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -44,14 +41,16 @@ public class VehicleService {
 	private final SaleRecordRepository saleRecordRepository;
 	private final CategoryService categoryService;
 	private final SupabaseStorageService storageService;
+	private final VehicleImageRepository vehicleImageRepository;
 
 	public VehicleService(VehicleRepository vehicleRepository, VehicleDocumentRepository documentRepository,
-			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService) {
+			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService, VehicleImageRepository vehicleImageRepository ) {
 		this.vehicleRepository = vehicleRepository;
 		this.documentRepository = documentRepository;
 		this.saleRecordRepository = saleRecordRepository;
 		this.categoryService = categoryService;
 		this.storageService = storageService;
+		this.vehicleImageRepository = vehicleImageRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -131,6 +130,21 @@ public class VehicleService {
 		vehicleRepository.saveAndFlush(vehicle);
 		return uploadedImages.stream()
 				.sorted(Comparator.comparing(VehicleImage::getDisplayOrder).thenComparing(VehicleImage::getId))
+				.map(VehicleService::toImageResponse)
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<VehicleImageResponse> getVehicleImages(Long vehicleId) {
+
+		if (!vehicleRepository.existsById(vehicleId)) {
+			throw new EntityNotFoundException(
+					"Vehicle not found: " + vehicleId);
+		}
+
+		return vehicleImageRepository
+				.findByVehicleIdOrderByDisplayOrderAsc(vehicleId)
+				.stream()
 				.map(VehicleService::toImageResponse)
 				.toList();
 	}
