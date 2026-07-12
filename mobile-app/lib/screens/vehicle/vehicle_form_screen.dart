@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_draft.dart';
+import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
 import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
@@ -17,7 +21,13 @@ class VehicleFormScreen extends StatefulWidget {
 }
 
 class _VehicleFormScreenState extends State<VehicleFormScreen> {
+  static const double _maxPhotoWidth = 1600;
+  static const int _photoQuality = 82;
+
   final formKey = GlobalKey<FormState>();
+  final imagePicker = ImagePicker();
+  final pendingPhotos = <XFile>[];
+
   late final TextEditingController title;
   late final TextEditingController registrationNumber;
   late final TextEditingController brand;
@@ -30,9 +40,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   late final TextEditingController color;
   late final TextEditingController price;
   late final TextEditingController description;
-  late final TextEditingController thumbnailUrl;
   late final TextEditingController location;
-  late final TextEditingController imageUrl;
+  late List<VehicleImage> existingPhotos;
+
   List<Category> categories = [];
   int? categoryId;
   String fuelType = 'PETROL';
@@ -65,16 +75,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     price =
         TextEditingController(text: vehicle?.price.toStringAsFixed(0) ?? '');
     description = TextEditingController(text: vehicle?.description ?? '');
-    thumbnailUrl = TextEditingController(text: vehicle?.thumbnailUrl ?? '');
     location = TextEditingController(text: vehicle?.location ?? '');
-    imageUrl = TextEditingController(
-        text: vehicle?.images.isNotEmpty == true
-            ? vehicle!.images.first.imageUrl
-            : vehicle?.thumbnailUrl ?? '');
+    existingPhotos = [...?vehicle?.images]
+      ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
     fuelType = vehicle?.fuelType ?? 'PETROL';
     status = vehicle?.status ?? 'AVAILABLE';
     categoryId = vehicle?.category?.id;
     loadCategories();
+    restoreLostPhotos();
   }
 
   @override
@@ -92,9 +100,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       color,
       price,
       description,
-      thumbnailUrl,
       location,
-      imageUrl,
     ]) {
       controller.dispose();
     }
@@ -111,19 +117,64 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     if (mounted) setState(() => loading = false);
   }
 
+  Future<void> restoreLostPhotos() async {
+    try {
+      final response = await imagePicker.retrieveLostData();
+      if (!mounted || response.isEmpty) return;
+      if (response.exception != null) {
+        showMessage('Unable to restore the interrupted photo capture');
+        return;
+      }
+      final files = response.files;
+      if (files == null || files.isEmpty) return;
+      setState(() => pendingPhotos.addAll(files));
+    } catch (_) {
+      // Lost image recovery is best-effort only.
+    }
+  }
+
+  Future<void> takePhoto() async {
+    try {
+      final photo = await imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: _maxPhotoWidth,
+        imageQuality: _photoQuality,
+      );
+      if (photo == null || !mounted) return;
+      setState(() => pendingPhotos.add(photo));
+    } catch (err) {
+      if (mounted) showMessage('Unable to open camera: $err');
+    }
+  }
+
+  Future<void> pickFromGallery() async {
+    try {
+      final photos = await imagePicker.pickMultiImage(
+        maxWidth: _maxPhotoWidth,
+        imageQuality: _photoQuality,
+      );
+      if (photos.isEmpty || !mounted) return;
+      setState(() => pendingPhotos.addAll(photos));
+    } catch (err) {
+      if (mounted) showMessage('Unable to open gallery: $err');
+    }
+  }
+
   Future<void> save() async {
     if (!formKey.currentState!.validate()) return;
     if (categoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please create a category first')),
-      );
+      showMessage('Please create a category first');
+      return;
+    }
+    if (existingPhotos.isEmpty && pendingPhotos.isEmpty) {
+      showMessage('Please add at least one bike photo');
       return;
     }
     setState(() => saving = true);
     try {
       final draft = VehicleDraft(
         title: title.text.trim(),
-        registrationNumber: registrationNumber.text.trim(),
+        registrationNumber: registrationNumber.text.trim().toUpperCase(),
         brand: brand.text.trim(),
         modelName: modelName.text.trim(),
         variantName: variantName.text.trim(),
@@ -137,26 +188,63 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         description: description.text.trim(),
         status: status,
         categoryId: categoryId!,
-        thumbnailUrl: thumbnailUrl.text.trim(),
         location: location.text.trim(),
-        imageUrl: imageUrl.text.trim(),
+        existingImages: existingPhotos,
       );
-      await widget.api.saveVehicle(draft, id: widget.existing?.id);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isEditing ? 'Bike updated' : 'Bike added')),
+      final savedVehicle =
+          await widget.api.saveVehicle(draft, id: widget.existing?.id);
+      if (pendingPhotos.isNotEmpty) {
+        print("Pending Photos : ${pendingPhotos.map((photo) => photo.path).toList()}");
+        await widget.api.uploadVehicleImages(
+          vehicleId: savedVehicle.id,
+          paths: pendingPhotos.map((photo) => photo.path).toList(),
+          startOrder: existingPhotos.length,
+          altText: savedVehicle.title,
         );
-        if (isEditing) Navigator.pop(context);
-        formKey.currentState!.reset();
+      }
+      if (!mounted) return;
+      showMessage(isEditing ? 'Bike updated' : 'Bike added');
+      if (isEditing) {
+        Navigator.pop(context);
+      } else {
+        clearFormAfterCreate();
       }
     } catch (err) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.toString())),
-        );
-      }
+      if (mounted) showMessage(err.toString());
     }
     if (mounted) setState(() => saving = false);
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void clearFormAfterCreate() {
+    formKey.currentState!.reset();
+    for (final controller in [
+      title,
+      registrationNumber,
+      brand,
+      modelName,
+      variantName,
+      manufactureYear,
+      registrationYear,
+      kilometersDriven,
+      ownerSerial,
+      color,
+      price,
+      description,
+      location,
+    ]) {
+      controller.clear();
+    }
+    setState(() {
+      fuelType = 'PETROL';
+      status = 'AVAILABLE';
+      pendingPhotos.clear();
+      existingPhotos = [];
+    });
   }
 
   @override
@@ -165,37 +253,13 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         ? const Center(child: CircularProgressIndicator())
         : Form(
             key: formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 if (error != null)
                   ErrorPanel(message: error!, onRetry: loadCategories),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey(categoryId),
-                        initialValue: categoryId,
-                        decoration: const InputDecoration(
-                            labelText: 'Category',
-                            border: OutlineInputBorder()),
-                        items: categories
-                            .map((category) => DropdownMenuItem(
-                                value: category.id, child: Text(category.name)))
-                            .toList(),
-                        onChanged: (value) =>
-                            setState(() => categoryId = value),
-                        validator: (value) => value == null ? 'Required' : null,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton.filledTonal(
-                      onPressed: createCategory,
-                      icon: const Icon(Icons.add),
-                      tooltip: 'Add category',
-                    ),
-                  ],
-                ),
+                categoryField(),
                 const SizedBox(height: 12),
                 textField(title, 'Bike title', required: true),
                 textField(registrationNumber, 'Registration number'),
@@ -242,8 +306,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 textField(color, 'Color'),
                 numberField(price, 'Price', required: true),
                 textField(location, 'Location'),
-                textField(thumbnailUrl, 'Thumbnail image URL'),
-                textField(imageUrl, 'Gallery image URL'),
+                photoPicker(),
                 textField(description, 'Description', maxLines: 4),
                 const SizedBox(height: 12),
                 FilledButton.icon(
@@ -265,6 +328,174 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit bike')),
       body: content,
+    );
+  }
+
+  Widget categoryField() {
+    return Row(
+      children: [
+        Expanded(
+          child: DropdownButtonFormField<int>(
+            key: ValueKey(categoryId),
+            initialValue: categoryId,
+            decoration: const InputDecoration(
+                labelText: 'Category', border: OutlineInputBorder()),
+            items: categories
+                .map((category) => DropdownMenuItem(
+                    value: category.id, child: Text(category.name)))
+                .toList(),
+            onChanged: (value) => setState(() => categoryId = value),
+            validator: (value) => value == null ? 'Required' : null,
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filledTonal(
+          onPressed: createCategory,
+          icon: const Icon(Icons.add),
+          tooltip: 'Add category',
+        ),
+      ],
+    );
+  }
+
+  Widget photoPicker() {
+    final totalPhotos = existingPhotos.length + pendingPhotos.length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('Bike photos',
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              Text('$totalPhotos selected',
+                  style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.tonalIcon(
+                  onPressed: saving ? null : takePhoto,
+                  icon: const Icon(Icons.photo_camera),
+                  label: const Text('Camera'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: saving ? null : pickFromGallery,
+                  icon: const Icon(Icons.photo_library_outlined),
+                  label: const Text('Gallery'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (totalPhotos == 0)
+            const SizedBox(
+              height: 110,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.fromBorderSide(
+                      BorderSide(color: Color(0xffd5ddd8))),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Center(child: Icon(Icons.add_a_photo_outlined)),
+              ),
+            )
+          else
+            SizedBox(
+              height: 122,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  for (var index = 0; index < existingPhotos.length; index++)
+                    photoTile(
+                      isThumbnail: index == 0,
+                      image: Image.network(
+                        existingPhotos[index].imageUrl,
+                        fit: BoxFit.cover,
+                      ),
+                      onRemove: () =>
+                          setState(() => existingPhotos.removeAt(index)),
+                    ),
+                  for (var index = 0; index < pendingPhotos.length; index++)
+                    photoTile(
+                      isThumbnail: existingPhotos.isEmpty && index == 0,
+                      image: Image.file(
+                        File(pendingPhotos[index].path),
+                        fit: BoxFit.cover,
+                      ),
+                      onRemove: () =>
+                          setState(() => pendingPhotos.removeAt(index)),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget photoTile({
+    required bool isThumbnail,
+    required Image image,
+    required VoidCallback onRemove,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: SizedBox(
+        width: 118,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              image,
+              Positioned(
+                top: 6,
+                right: 6,
+                child: IconButton.filledTonal(
+                  onPressed: saving ? null : onRemove,
+                  icon: const Icon(Icons.close, size: 18),
+                  tooltip: 'Remove photo',
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(32, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ),
+              if (isThumbnail)
+                Positioned(
+                  left: 6,
+                  bottom: 6,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Text(
+                        'Thumbnail',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -359,11 +590,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         categoryId = category.id;
       });
     } catch (err) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.toString())),
-        );
-      }
+      if (mounted) showMessage(err.toString());
     }
   }
 }

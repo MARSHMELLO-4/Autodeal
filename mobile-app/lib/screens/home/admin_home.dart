@@ -4,6 +4,7 @@ import 'package:shree_ganesh_autodeal_admin/screens/inventory/inventory_page.dar
 import 'package:shree_ganesh_autodeal_admin/screens/reports/reports_page.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/vehicle/vehicle_form_screen.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -34,7 +35,14 @@ class _AdminHomeState extends State<AdminHome> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shree Ganesh Autodeal'),
+        title: Text(
+          'Shree Ganesh Autodeal',
+          style: GoogleFonts.montserrat(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
         centerTitle: false,
       ),
       body: pages[index],

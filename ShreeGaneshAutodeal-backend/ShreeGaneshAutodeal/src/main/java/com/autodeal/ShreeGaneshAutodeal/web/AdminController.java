@@ -9,6 +9,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SalesReportResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDetailResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDocumentResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.service.CategoryService;
@@ -109,6 +110,17 @@ public class AdminController {
 			@RequestParam(required = false) String title,
 			@RequestParam MultipartFile file) {
 		return vehicleService.uploadDocument(id, type, title, file);
+	}
+
+	@PostMapping("/vehicles/{id}/images")
+	@ResponseStatus(HttpStatus.CREATED)
+	public List<VehicleImageResponse> uploadVehicleImages(
+			@PathVariable Long id,
+			@RequestParam("files") List<MultipartFile> files,
+			@RequestParam(required = false) Integer startOrder,
+			@RequestParam(required = false) String altText) {
+		System.out.println("Request came till controller");
+		return vehicleService.uploadImages(id, files, startOrder, altText);
 	}
 
 	@GetMapping("/vehicles/{id}/documents")

@@ -21,8 +21,24 @@ public class SupabaseStorageService {
 	}
 
 	public StoredDocument uploadVehicleDocument(Long vehicleId, MultipartFile file) {
+		return uploadVehicleFile(vehicleId, file, "documents", "document");
+	}
+
+	public StoredDocument uploadVehicleImage(Long vehicleId, MultipartFile file) {
+
+		System.out.println("File  : " + file);
+		System.out.println("FIle content recieved : " + file.getContentType());
+//		System.out.println("File startes with recieved : " + file.getContentType().startsWith());
+
+		if (file != null && file.getContentType() != null && !file.getContentType().startsWith("image/")) {
+			throw new DocumentStorageException("Only image files can be uploaded as vehicle photos");
+		}
+		return uploadVehicleFile(vehicleId, file, "images", "vehicle-photo");
+	}
+
+	private StoredDocument uploadVehicleFile(Long vehicleId, MultipartFile file, String folder, String fallbackName) {
 		if (file == null || file.isEmpty()) {
-			throw new DocumentStorageException("Document file is required");
+			throw new DocumentStorageException("Upload file is required");
 		}
 		if (!properties.storageConfigured()) {
 			throw new DocumentStorageException(
@@ -30,10 +46,11 @@ public class SupabaseStorageService {
 		}
 
 		String bucket = properties.getStorage().getBucket();
-		String storagePath = "vehicles/%d/documents/%s-%s".formatted(
+		String storagePath = "vehicles/%d/%s/%s-%s".formatted(
 				vehicleId,
+				folder,
 				UUID.randomUUID(),
-				sanitizeFilename(file.getOriginalFilename()));
+				sanitizeFilename(file.getOriginalFilename(), fallbackName));
 		String contentType = file.getContentType() == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : file.getContentType();
 
 		try {
@@ -62,8 +79,8 @@ public class SupabaseStorageService {
 		return trimTrailingSlash(properties.getUrl()) + "/storage/v1/object/public/" + bucket + "/" + encodedPath;
 	}
 
-	private static String sanitizeFilename(String filename) {
-		String value = filename == null || filename.isBlank() ? "document" : filename.trim();
+	private static String sanitizeFilename(String filename, String fallbackName) {
+		String value = filename == null || filename.isBlank() ? fallbackName : filename.trim();
 		return value.replaceAll("[^A-Za-z0-9._-]", "-");
 	}
 

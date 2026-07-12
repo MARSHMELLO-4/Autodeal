@@ -24,6 +24,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -103,6 +104,35 @@ public class VehicleService {
 		document.setContentType(storedDocument.contentType());
 		document.setFileSize(storedDocument.fileSize());
 		return toDocumentResponse(documentRepository.save(document));
+	}
+
+	public List<VehicleImageResponse> uploadImages(Long vehicleId, List<MultipartFile> files, Integer startOrder,
+			String altText) {
+		System.out.println("request came till service");
+		if (files == null || files.isEmpty()) {
+			throw new IllegalArgumentException("At least one bike photo is required");
+		}
+		Vehicle vehicle = getEntity(vehicleId);
+		boolean hadImages = !vehicle.getImages().isEmpty();
+		int nextOrder = startOrder == null ? nextImageOrder(vehicle) : Math.max(startOrder, 0);
+		List<VehicleImage> uploadedImages = new ArrayList<>();
+		for (MultipartFile file : files) {
+			StoredDocument storedImage = storageService.uploadVehicleImage(vehicleId, file);
+			VehicleImage image = new VehicleImage();
+			image.setImageUrl(storedImage.fileUrl());
+			image.setAltText(CategoryService.blankToNull(altText) == null ? vehicle.getTitle() : altText.trim());
+			image.setDisplayOrder(nextOrder++);
+			vehicle.addImage(image);
+			uploadedImages.add(image);
+		}
+		if (!uploadedImages.isEmpty() && (!hadImages || CategoryService.blankToNull(vehicle.getThumbnailUrl()) == null)) {
+			vehicle.setThumbnailUrl(uploadedImages.get(0).getImageUrl());
+		}
+		vehicleRepository.saveAndFlush(vehicle);
+		return uploadedImages.stream()
+				.sorted(Comparator.comparing(VehicleImage::getDisplayOrder).thenComparing(VehicleImage::getId))
+				.map(VehicleService::toImageResponse)
+				.toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -206,6 +236,15 @@ public class VehicleService {
 					return image;
 				})
 				.toList();
+	}
+
+	private static int nextImageOrder(Vehicle vehicle) {
+		return vehicle.getImages().stream()
+				.map(VehicleImage::getDisplayOrder)
+				.filter(order -> order != null)
+				.max(Integer::compareTo)
+				.map(order -> order + 1)
+				.orElse(0);
 	}
 
 	private static VehicleSummaryResponse toSummary(Vehicle vehicle) {

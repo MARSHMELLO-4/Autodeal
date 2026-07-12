@@ -1,4 +1,5 @@
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
+import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
 
 class VehicleDraft {
   VehicleDraft({
@@ -17,9 +18,8 @@ class VehicleDraft {
     required this.description,
     required this.status,
     required this.categoryId,
-    required this.thumbnailUrl,
     required this.location,
-    required this.imageUrl,
+    this.existingImages = const [],
   });
 
   final String title;
@@ -37,11 +37,13 @@ class VehicleDraft {
   final String description;
   final String status;
   final int categoryId;
-  final String thumbnailUrl;
   final String location;
-  final String imageUrl;
+  final List<VehicleImage> existingImages;
 
   Map<String, dynamic> toJson() {
+    final visibleImages = existingImages
+        .where((image) => image.imageUrl.trim().isNotEmpty)
+        .toList();
     return {
       'title': title,
       'registrationNumber': emptyToNull(registrationNumber),
@@ -58,13 +60,17 @@ class VehicleDraft {
       'description': emptyToNull(description),
       'status': status,
       'categoryId': categoryId,
-      'thumbnailUrl': emptyToNull(thumbnailUrl),
+      'thumbnailUrl':
+          visibleImages.isEmpty ? null : visibleImages.first.imageUrl,
       'location': emptyToNull(location),
-      'images': imageUrl.trim().isEmpty
-          ? []
-          : [
-              {'imageUrl': imageUrl.trim(), 'altText': title, 'displayOrder': 0}
-            ],
+      'images': [
+        for (final entry in visibleImages.asMap().entries)
+          {
+            'imageUrl': entry.value.imageUrl.trim(),
+            'altText': emptyToNull(entry.value.altText ?? title),
+            'displayOrder': entry.key,
+          }
+      ],
     };
   }
 }

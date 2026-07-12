@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/home/admin_home.dart';
 
@@ -17,10 +18,13 @@ class AutodealAdminApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: AppTheme.lightColorScheme,
         useMaterial3: true,
+        textTheme: GoogleFonts.montserratTextTheme(),
         scaffoldBackgroundColor: const Color(0xfff6f7f5),
         cardTheme: CardThemeData(
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
           color: Colors.white,
         ),
       ),

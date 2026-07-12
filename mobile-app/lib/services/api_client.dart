@@ -6,7 +6,8 @@ import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 import 'package:shree_ganesh_autodeal_admin/models/sales_report.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_draft.dart';
-
+import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
+import 'package:http_parser/http_parser.dart';
 class ApiClient {
   ApiClient(this.baseUrl);
 
@@ -48,12 +49,21 @@ class ApiClient {
   }
 
   Future<Vehicle> saveVehicle(VehicleDraft draft, {int? id}) async {
-    final json = await _send(
-      id == null ? 'POST' : 'PUT',
-      id == null ? '/api/admin/vehicles' : '/api/admin/vehicles/$id',
-      draft.toJson(),
-    );
-    return Vehicle.fromJson(asJsonMap(json));
+    try {
+
+      print("Draft to save: ${draft.toJson()}");
+
+      final json = await _send(
+        id == null ? 'POST' : 'PUT',
+        id == null ? '/api/admin/vehicles' : '/api/admin/vehicles/$id',
+        draft.toJson(),
+      );
+
+      return Vehicle.fromJson(asJsonMap(json));
+    } catch (e) {
+      print("Error saving vehicle: $e");
+      rethrow; // Let the caller handle the error
+    }
   }
 
   Future<void> deleteVehicle(int id) async {
@@ -77,6 +87,46 @@ class ApiClient {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = await response.stream.bytesToString();
       throw Exception(_messageFromBody(body, 'Unable to upload document'));
+    }
+  }
+
+  Future<List<VehicleImage>> uploadVehicleImages({
+    required int vehicleId,
+    required List<String> paths,
+    required int startOrder,
+    required String altText,
+  }) async {
+    try {
+      final uploaded = <VehicleImage>[];
+      for (var index = 0; index < paths.length; index++) {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('$baseUrl/api/admin/vehicles/$vehicleId/images'),
+        );
+        request.fields['startOrder'] = (startOrder + index).toString();
+        request.fields['altText'] = altText;
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'files',
+            paths[index],
+            contentType: MediaType('image', 'jpeg'),
+          ),
+        );
+        final response = await request.send();
+        final body = await response.stream.bytesToString();
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw Exception(
+              _messageFromBody(body, 'Unable to upload bike photo'));
+        }
+        uploaded.addAll(
+          asJsonList(jsonDecode(body))
+              .map((item) => VehicleImage.fromJson(asJsonMap(item))),
+        );
+      }
+      return uploaded;
+    } catch(e){
+      print("Error uploading vehicle images: $e");
+      rethrow; // Let the caller handle the error
     }
   }
 
