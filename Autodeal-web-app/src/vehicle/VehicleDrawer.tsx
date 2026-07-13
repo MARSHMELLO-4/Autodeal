@@ -7,27 +7,16 @@ import type { SingleVehicleModel } from "../models/singleVehicleModel";
 interface VehicleDrawerProps {
   vehicle: SingleVehicleModel | null;
   loading: boolean;
-  setSelectedVehicle: Dispatch<
-    SetStateAction<SingleVehicleModel | null>
-  >;
+  setSelectedVehicle: Dispatch<SetStateAction<SingleVehicleModel | null>>;
 }
 
-const VehicleDrawer = ({
-  vehicle,
-  loading,
-  setSelectedVehicle,
-}: VehicleDrawerProps) => {
+const VehicleDrawer = ({ vehicle, loading, setSelectedVehicle }: VehicleDrawerProps) => {
   useEffect(() => {
     document.body.style.overflow = "hidden";
-
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedVehicle(null);
-      }
+      if (e.key === "Escape") setSelectedVehicle(null);
     };
-
     window.addEventListener("keydown", handleEscape);
-
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleEscape);
@@ -36,38 +25,26 @@ const VehicleDrawer = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex justify-end bg-[var(--ink)]/60 backdrop-blur-sm"
       onClick={() => setSelectedVehicle(null)}
     >
       <aside
         onClick={(e) => e.stopPropagation()}
-        className="relative h-full w-full overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-right duration-300 md:w-[700px] xl:w-[850px]"
+        className="relative h-full w-full overflow-y-auto bg-[var(--paper)] shadow-2xl animate-in slide-in-from-right duration-300 md:w-[700px] xl:w-[850px]"
       >
-        {/* Close */}
-
         <button
           onClick={() => setSelectedVehicle(null)}
-          className="absolute right-5 top-5 z-20 rounded-full bg-white p-3 shadow-lg transition hover:bg-gray-100"
+          className="absolute right-5 top-5 z-20 rounded-full bg-white p-3 shadow-md transition hover:bg-[var(--ink)]/5"
         >
           <X size={22} />
         </button>
 
-        {/* Loading */}
-
         {loading && (
           <div className="flex h-full flex-col items-center justify-center gap-5">
-            <Loader2
-              className="animate-spin text-emerald-700"
-              size={42}
-            />
-
-            <p className="text-lg font-medium text-gray-600">
-              Loading vehicle details...
-            </p>
+            <Loader2 className="animate-spin text-[var(--maroon)]" size={40} />
+            <p className="text-sm font-medium text-[var(--ink)]/50">Loading vehicle details...</p>
           </div>
         )}
-
-        {/* Content */}
 
         {!loading && vehicle && (
           <div className="p-8">

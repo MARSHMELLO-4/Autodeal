@@ -1,11 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
-import {
-  Bike,
-  ChevronRight,
-} from "lucide-react";
-
-import type { categoryModel } from "../models/CategoryModel";
-import type { filterModel } from "../models/FIltersModels";
+import { Bike, ChevronRight } from "lucide-react";
+import type { categoryModel } from "../models/categoryModel";
+import type { filterModel } from "../models/fIltersModels";
 
 interface CategoryRailProps {
   categories: categoryModel[];
@@ -13,93 +9,48 @@ interface CategoryRailProps {
   setFilters: Dispatch<SetStateAction<filterModel>>;
 }
 
-const CategoryRail = ({
-  categories,
-  filters,
-  setFilters,
-}: CategoryRailProps) => {
+const CategoryRail = ({ categories, filters, setFilters }: CategoryRailProps) => {
   return (
     <section className="mb-10">
-
       <div className="mb-5 flex items-center justify-between">
-
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Browse by Category
-          </h2>
-
-          <p className="mt-1 text-sm text-gray-500">
-            Find the perfect bike for your lifestyle.
-          </p>
+          <h2 className="font-display text-2xl italic text-[var(--ink)]">Browse by category</h2>
+          <p className="mt-1 text-sm text-[var(--ink)]/50">Find the perfect bike for your lifestyle.</p>
         </div>
-
-        <span className="hidden rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700 md:block">
+        <span className="hidden rounded-full bg-[var(--paper-soft)] px-4 py-2 text-sm font-semibold text-[var(--ink)]/60 md:block">
           {categories.length + 1} Categories
         </span>
-
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-
-        {/* All Stock */}
-
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         <button
-          onClick={() =>
-            setFilters((current) => ({
-              ...current,
-              category: "",
-            }))
-          }
-          className={`group flex min-w-fit items-center gap-3 rounded-2xl border px-6 py-4 transition-all duration-300 ${
+          onClick={() => setFilters((current) => ({ ...current, category: "" }))}
+          className={`group flex min-w-fit items-center gap-2.5 rounded-full border px-5 py-3 transition-all duration-200 ${
             filters.category === ""
-              ? "border-emerald-700 bg-emerald-700 text-white shadow-lg"
-              : "border-gray-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
+              ? "border-[var(--maroon)] bg-[var(--maroon)] text-white shadow-sm"
+              : "border-[var(--ink)]/12 bg-white text-[var(--ink)]/70 hover:border-[var(--maroon)]/40"
           }`}
         >
-          <Bike size={20} />
-
-          <span className="font-medium">
-            All Stock
-          </span>
-
-          <ChevronRight
-            size={18}
-            className="transition group-hover:translate-x-1"
-          />
+          <Bike size={18} />
+          <span className="text-sm font-medium">All Stock</span>
+          <ChevronRight size={16} className="transition group-hover:translate-x-1" />
         </button>
 
-        {/* Categories */}
-
         {categories.map((category) => {
-
-          const active =
-            filters.category === category.slug;
-
+          const active = filters.category === category.slug;
           return (
             <button
               key={category.id}
-              onClick={() =>
-                setFilters((current) => ({
-                  ...current,
-                  category: category.slug,
-                }))
-              }
-              className={`group flex min-w-fit items-center gap-3 rounded-2xl border px-6 py-4 transition-all duration-300 ${
+              onClick={() => setFilters((current) => ({ ...current, category: category.slug }))}
+              className={`group flex min-w-fit items-center gap-2.5 rounded-full border px-5 py-3 transition-all duration-200 ${
                 active
-                  ? "border-emerald-700 bg-emerald-700 text-white shadow-lg"
-                  : "border-gray-200 bg-white hover:border-emerald-400 hover:bg-emerald-50"
+                  ? "border-[var(--maroon)] bg-[var(--maroon)] text-white shadow-sm"
+                  : "border-[var(--ink)]/12 bg-white text-[var(--ink)]/70 hover:border-[var(--maroon)]/40"
               }`}
             >
-              <Bike size={20} />
-
-              <span className="font-medium capitalize">
-                {category.name}
-              </span>
-
-              <ChevronRight
-                size={18}
-                className="transition group-hover:translate-x-1"
-              />
+              <Bike size={18} />
+              <span className="text-sm font-medium capitalize">{category.name}</span>
+              <ChevronRight size={16} className="transition group-hover:translate-x-1" />
             </button>
           );
         })}

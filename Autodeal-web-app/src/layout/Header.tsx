@@ -2,73 +2,50 @@ import { Bike, Phone, MessageCircle, Menu } from "lucide-react";
 
 const Header = () => {
   return (
-    <header className="sticky top-0 z-50 border-b border-emerald-800/10 bg-white/90 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-50 bg-[var(--paper)]/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-lg">
-            <Bike size={24} />
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--maroon)] text-[var(--maroon)]">
+            <Bike size={20} strokeWidth={2.25} />
           </div>
-
           <div>
-            <h1 className="text-lg font-bold tracking-wide text-emerald-900">
-              Shree Ganesh Autodeal
+            <h1 className="font-display text-xl italic text-[var(--ink)]">
+              Shree Ganesh <span className="text-[var(--maroon)]">Autodeal</span>
             </h1>
-
-            <p className="text-sm text-gray-500">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-[var(--ink)]/45">
               Trusted Pre-Owned Two Wheelers
             </p>
           </div>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-8 lg:flex">
-          <a
-            href="#inventory"
-            className="font-medium text-gray-600 transition hover:text-emerald-700"
-          >
-            Inventory
-          </a>
-
-          <a
-            href="#why-us"
-            className="font-medium text-gray-600 transition hover:text-emerald-700"
-          >
-            Why Us
-          </a>
-
-          <a
-            href="#contact"
-            className="font-medium text-gray-600 transition hover:text-emerald-700"
-          >
-            Contact
-          </a>
+          <a href="#inventory" className="text-sm font-medium text-[var(--ink)]/70 transition hover:text-[var(--maroon)]">Inventory</a>
+          <a href="#why-us" className="text-sm font-medium text-[var(--ink)]/70 transition hover:text-[var(--maroon)]">Why Us</a>
+          <a href="#contact" className="text-sm font-medium text-[var(--ink)]/70 transition hover:text-[var(--maroon)]">Contact</a>
         </nav>
 
-        {/* Actions */}
         <div className="hidden items-center gap-3 md:flex">
           <a
             href="https://wa.me/919999999999"
-            className="flex items-center gap-2 rounded-xl border border-emerald-200 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+            className="flex items-center gap-2 rounded-full border border-[var(--ink)]/15 px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--moss)] hover:text-[var(--moss)]"
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={16} />
             WhatsApp
           </a>
-
           <a
             href="tel:+919999999999"
-            className="flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition duration-300 hover:bg-emerald-800 hover:shadow-xl"
+            className="flex items-center gap-2 rounded-full bg-[var(--maroon)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--maroon-dark)]"
           >
-            <Phone size={18} />
+            <Phone size={16} />
             Call Now
           </a>
         </div>
 
-        {/* Mobile Menu */}
-        <button className="rounded-lg p-2 transition hover:bg-emerald-50 lg:hidden">
-          <Menu className="text-emerald-800" size={24} />
+        <button className="rounded-lg p-2 transition hover:bg-[var(--ink)]/5 lg:hidden">
+          <Menu className="text-[var(--ink)]" size={22} />
         </button>
       </div>
+      <div className="road-line" />
     </header>
   );
 };

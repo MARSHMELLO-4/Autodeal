@@ -16,8 +16,8 @@ import FilterPanel from "./filters/FilterPanel";
 import CategoryRail from "./filters/CategoryRail";
 import VehicleCard from "./vehicle/VehicleCard";
 import VehicleDrawer from "./vehicle/VehicleDrawer";
-import type { categoryModel } from "./models/CategoryModel";
-import type { filterModel } from "./models/FIltersModels";
+import type { categoryModel } from "./models/categoryModel";
+import type { filterModel } from "./models/fIltersModels";
 import type { VehicleModel } from "./models/vehicleModel";
 import type { SingleVehicleModel } from "./models/singleVehicleModel";
 
@@ -72,7 +72,7 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[var(--paper)]">
       <div className="mx-auto max-w-7xl px-6 py-10">
         <Header />
         <FilterPanel
@@ -105,9 +105,13 @@ function App() {
             )}
             {!loading && vehicles.length === 0 && (
               <div className="empty-state">
-                <Bike size={40} />
-                <strong>No bikes match this search.</strong>
-                <span>Try another model name, category, or status.</span>
+                <Bike size={40} className="text-[var(--ink)]/20" />
+                <strong className="font-display italic text-[var(--ink)]">
+                  No bikes match this search.
+                </strong>
+                <span className="text-[var(--ink)]/50">
+                  Try another model name, category, or status.
+                </span>
               </div>
             )}
             {!loading && vehicles.length > 0 && (
