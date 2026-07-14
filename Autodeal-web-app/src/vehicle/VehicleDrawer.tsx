@@ -10,13 +10,22 @@ interface VehicleDrawerProps {
   setSelectedVehicle: Dispatch<SetStateAction<SingleVehicleModel | null>>;
 }
 
-const VehicleDrawer = ({ vehicle, loading, setSelectedVehicle }: VehicleDrawerProps) => {
+const VehicleDrawer = ({
+  vehicle,
+  loading,
+  setSelectedVehicle,
+}: VehicleDrawerProps) => {
   useEffect(() => {
     document.body.style.overflow = "hidden";
+
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedVehicle(null);
+      if (e.key === "Escape") {
+        setSelectedVehicle(null);
+      }
     };
+
     window.addEventListener("keydown", handleEscape);
+
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleEscape);
@@ -25,33 +34,92 @@ const VehicleDrawer = ({ vehicle, loading, setSelectedVehicle }: VehicleDrawerPr
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-end bg-[var(--ink)]/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-0 backdrop-blur-md md:p-8"
       onClick={() => setSelectedVehicle(null)}
     >
-      <aside
+      <div
         onClick={(e) => e.stopPropagation()}
-        className="relative h-full w-full overflow-y-auto bg-[var(--paper)] shadow-2xl animate-in slide-in-from-right duration-300 md:w-[700px] xl:w-[850px]"
+        className="
+          relative
+          h-full
+          w-full
+          overflow-hidden
+          bg-[var(--paper)]
+          shadow-2xl
+          animate-[fadeIn_.25s_ease]
+          md:h-[92vh]
+          md:max-w-6xl
+          md:rounded-3xl
+        "
       >
-        <button
-          onClick={() => setSelectedVehicle(null)}
-          className="absolute right-5 top-5 z-20 rounded-full bg-white p-3 shadow-md transition hover:bg-[var(--ink)]/5"
-        >
-          <X size={22} />
-        </button>
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-white/90 px-6 py-4 backdrop-blur-lg">
 
-        {loading && (
-          <div className="flex h-full flex-col items-center justify-center gap-5">
-            <Loader2 className="animate-spin text-[var(--maroon)]" size={40} />
-            <p className="text-sm font-medium text-[var(--ink)]/50">Loading vehicle details...</p>
-          </div>
-        )}
+          <div>
+            <h2 className="text-lg font-bold text-[var(--ink)]">
+              Vehicle Details
+            </h2>
 
-        {!loading && vehicle && (
-          <div className="p-8">
-            <VehicleDetails vehicle={vehicle} />
+            <p className="text-sm text-[var(--moss)]">
+              Verified Pre-Owned Motorcycle
+            </p>
           </div>
-        )}
-      </aside>
+
+          <button
+            onClick={() => setSelectedVehicle(null)}
+            className="
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              rounded-full
+              bg-slate-100
+              transition-all
+              duration-300
+              hover:rotate-90
+              hover:bg-red-50
+              hover:text-red-600
+            "
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="h-[calc(100%-72px)] overflow-y-auto">
+
+          {loading && (
+            <div className="flex h-full flex-col items-center justify-center gap-6">
+
+              <Loader2
+                size={52}
+                className="animate-spin text-[var(--maroon)]"
+              />
+
+              <div className="text-center">
+
+                <h3 className="text-xl font-semibold text-[var(--ink)]">
+                  Loading Vehicle
+                </h3>
+
+                <p className="mt-2 text-[var(--moss)]">
+                  Please wait while we fetch the latest details...
+                </p>
+
+              </div>
+
+            </div>
+          )}
+
+          {!loading && vehicle && (
+            <div className="mx-auto max-w-6xl p-4 md:p-8">
+              <VehicleDetails vehicle={vehicle} />
+            </div>
+          )}
+
+        </div>
+      </div>
     </div>
   );
 };

@@ -12,7 +12,7 @@ interface FilterPanelProps {
 
 const FilterPanel = ({ filters, categories, setFilters }: FilterPanelProps) => {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-[var(--ink)]/8 bg-[var(--paper-soft)] px-8 py-16 shadow-sm">
+    <section className="relative overflow-hidden rounded-3xl border border-[var(--ink)]/8 bg-[var(--paper-soft)] px-8 py-16 shadow-sm" id="categories">
       <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[var(--marigold)]/20 blur-3xl" />
       <div className="absolute -left-20 bottom-0 h-52 w-52 rounded-full bg-[var(--maroon)]/10 blur-3xl" />
 

@@ -23,6 +23,10 @@
   --card: #FFFFFF;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Work Sans', sans-serif;
   color: var(--ink);

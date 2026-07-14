@@ -1,4 +1,10 @@
-import { Bike, Gauge, Calendar, MapPin, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  Bike,
+  Calendar,
+  Gauge,
+  MapPin,
+} from "lucide-react";
 import type { VehicleModel } from "../models/vehicleModel";
 import { formatKm, formatPrice } from "../utils/formatter";
 
@@ -8,67 +14,144 @@ interface VehicleCardProps {
 }
 
 const statusStyles: Record<string, string> = {
-  AVAILABLE: "bg-[var(--moss)] text-white",
-  RESERVED: "bg-[var(--marigold)] text-[var(--ink)]",
-  SOLD: "bg-[var(--ink)]/70 text-white",
+  AVAILABLE:
+    "bg-emerald-500/90 text-white border border-emerald-400",
+  RESERVED:
+    "bg-amber-400/90 text-black border border-amber-300",
+  SOLD:
+    "bg-gray-900/90 text-white border border-gray-700",
 };
 
 const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
   return (
-    <article className="group overflow-hidden rounded-2xl border border-[var(--ink)]/8 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <article className="group overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-black/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
+
+      {/* IMAGE */}
       <button
         type="button"
         onClick={() => onOpen(vehicle.id.toString())}
-        className="relative block h-56 w-full overflow-hidden bg-[var(--paper-soft)]"
+        className="relative block h-72 overflow-hidden"
       >
         {vehicle.thumbnailUrl ? (
           <img
             src={vehicle.thumbnailUrl}
             alt={vehicle.title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
           />
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <Bike className="text-[var(--ink)]/20" size={56} />
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+            <Bike
+              size={70}
+              className="text-slate-400"
+            />
           </div>
         )}
 
-        <span className={`absolute left-4 top-4 rounded-full px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyles[vehicle.status]}`}>
-          {vehicle.status}
-        </span>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
-        <div className="price-tag absolute -right-1 bottom-4 flex rotate-[-3deg] items-center bg-[var(--marigold)] py-1.5 pl-4 pr-3 shadow-md">
-          <span className="font-mono text-sm font-semibold text-[var(--maroon-dark)]">
-            {formatPrice(vehicle.price)}
-          </span>
+        {/* Status */}
+        <div
+          className={`absolute left-5 top-5 rounded-full px-4 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur ${statusStyles[vehicle.status]}`}
+        >
+          {vehicle.status}
+        </div>
+
+        {/* Category */}
+        <div className="absolute right-5 top-5 rounded-full bg-white/90 px-4 py-1 text-xs font-semibold text-[var(--ink)] shadow backdrop-blur">
+          {vehicle.category.name}
+        </div>
+
+        {/* Price */}
+        <div className="absolute bottom-5 left-5">
+          <div className="rounded-2xl bg-white/95 px-5 py-3 shadow-xl backdrop-blur">
+            <p className="text-xs uppercase tracking-widest text-[var(--moss)]">
+              Starting Price
+            </p>
+
+            <h3 className="font-mono text-2xl font-black text-[var(--maroon)]">
+              {formatPrice(vehicle.price)}
+            </h3>
+          </div>
         </div>
       </button>
 
-      <div className="space-y-4 p-6">
+      {/* CONTENT */}
+      <div className="space-y-6 p-6">
+
+        {/* Title */}
         <div>
-          <h2 className="text-lg font-bold text-[var(--ink)]">{vehicle.title}</h2>
-          <p className="mt-0.5 text-sm text-[var(--ink)]/50">{vehicle.brand} • {vehicle.modelName}</p>
+          <h2 className="line-clamp-1 text-2xl font-bold text-[var(--ink)]">
+            {vehicle.title}
+          </h2>
+
+          <p className="mt-1 text-sm text-[var(--moss)]">
+            {vehicle.brand} • {vehicle.modelName}
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-[var(--ink)]/8 py-3 text-sm text-[var(--ink)]/70">
-          <span className="flex items-center gap-1.5"><Gauge size={15} className="text-[var(--maroon)]" />{formatKm(vehicle.kilometersDriven)}</span>
-          <span className="flex items-center gap-1.5"><Bike size={15} className="text-[var(--maroon)]" />{vehicle.fuelType}</span>
-          <span className="flex items-center gap-1.5"><Calendar size={15} className="text-[var(--maroon)]" />{vehicle.manufactureYear}</span>
-          <span className="flex items-center gap-1.5"><MapPin size={15} className="text-[var(--maroon)]" />{vehicle.location}</span>
+        {/* Specs */}
+        <div className="grid grid-cols-2 gap-3">
+
+          <div className="rounded-2xl bg-slate-50 p-3">
+            <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--moss)]">
+              <Gauge size={15} />
+              Mileage
+            </div>
+
+            <p className="font-semibold text-[var(--ink)]">
+              {formatKm(vehicle.kilometersDriven)}
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-3">
+            <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--moss)]">
+              <Calendar size={15} />
+              Year
+            </div>
+
+            <p className="font-semibold text-[var(--ink)]">
+              {vehicle.manufactureYear}
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-3">
+            <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--moss)]">
+              <Bike size={15} />
+              Fuel
+            </div>
+
+            <p className="font-semibold text-[var(--ink)]">
+              {vehicle.fuelType}
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-3">
+            <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--moss)]">
+              <MapPin size={15} />
+              City
+            </div>
+
+            <p className="truncate font-semibold text-[var(--ink)]">
+              {vehicle.location}
+            </p>
+          </div>
+
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="rounded-full bg-[var(--paper-soft)] px-3 py-1 text-sm font-medium text-[var(--ink)]/70">
-            {vehicle.category.name}
-          </span>
-          <button
-            onClick={() => onOpen(vehicle.id.toString())}
-            className="flex items-center gap-2 rounded-full bg-[var(--maroon)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--maroon-dark)]"
-          >
-            View Details
-            <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
-          </button>
-        </div>
+        {/* Button */}
+        <button
+          onClick={() => onOpen(vehicle.id.toString())}
+          className="group/button flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[var(--maroon)] to-[var(--maroon-dark)] py-4 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl"
+        >
+          View Complete Details
+
+          <ArrowRight
+            size={18}
+            className="transition-transform duration-300 group-hover/button:translate-x-1"
+          />
+        </button>
+
       </div>
     </article>
   );
