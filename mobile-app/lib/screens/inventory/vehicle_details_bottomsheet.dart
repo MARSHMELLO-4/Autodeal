@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/components/shareVehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/dialogs/confirm_dialog.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
@@ -45,6 +46,57 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
                     controller: controller,
                     padding: const EdgeInsets.all(16),
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+
+                          IconButton(
+                            tooltip: "Edit",
+                            icon: const Icon(Icons.edit_outlined),
+                            onPressed: () async {
+                              if (context.mounted) Navigator.pop(context);
+
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => VehicleFormScreen(
+                                    api: api,
+                                    existing: vehicle,
+                                  ),
+                                ),
+                              );
+
+                              await onChanged();
+                            },
+                          ),
+
+                          IconButton(
+                            tooltip: "Share",
+                            icon: const Icon(Icons.share_outlined),
+                            onPressed: () {
+                              shareVehicle(vehicle);
+                            },
+                          ),
+
+                          IconButton(
+                            tooltip: "Delete",
+                            color: Colors.red,
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () async {
+                              final confirmed =
+                              await confirm(context, 'Delete this bike?');
+
+                              if (!confirmed) return;
+
+                              await api.deleteVehicle(vehicle.id);
+
+                              if (context.mounted) Navigator.pop(context);
+
+                              await onChanged();
+                            },
+                          ),
+                        ],
+                      ),
                       if (vehicle.images.isNotEmpty) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
@@ -158,21 +210,6 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
                       ),
                       const SizedBox(height: 8),
                       FilledButton.tonalIcon(
-                        onPressed: () async {
-                          if (context.mounted) Navigator.pop(context);
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    VehicleFormScreen(api: api, existing: vehicle)),
-                          );
-                          await onChanged();
-                        },
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit bike'),
-                      ),
-                      const SizedBox(height: 8),
-                      FilledButton.tonalIcon(
                         onPressed: vehicle.status == 'SOLD'
                             ? null
                             : () async {
@@ -184,18 +221,6 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
                         label: const Text('Mark as sold'),
                       ),
                       const SizedBox(height: 8),
-                      OutlinedButton.icon(
-                        onPressed: () async {
-                          final confirmed =
-                          await confirm(context, 'Delete this bike?');
-                          if (!confirmed) return;
-                          await api.deleteVehicle(vehicle.id);
-                          if (context.mounted) Navigator.pop(context);
-                          await onChanged();
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Delete bike'),
-                      ),
                     ],
                   );
                 },
