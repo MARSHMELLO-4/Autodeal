@@ -307,7 +307,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 numberField(price, 'Price', required: true),
                 textField(location, 'Location'),
                 photoPicker(),
-                textField(description, 'Description', maxLines: 4),
+                // textField(description, 'Description', maxLines: 4),
                 const SizedBox(height: 12),
                 FilledButton.icon(
                   onPressed: saving ? null : save,

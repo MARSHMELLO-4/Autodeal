@@ -42,15 +42,18 @@ public class VehicleService {
 	private final CategoryService categoryService;
 	private final SupabaseStorageService storageService;
 	private final VehicleImageRepository vehicleImageRepository;
+	private final LLMService llmService;
 
 	public VehicleService(VehicleRepository vehicleRepository, VehicleDocumentRepository documentRepository,
-			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService, VehicleImageRepository vehicleImageRepository ) {
+			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService,
+						  VehicleImageRepository vehicleImageRepository, LLMService llmService ) {
 		this.vehicleRepository = vehicleRepository;
 		this.documentRepository = documentRepository;
 		this.saleRecordRepository = saleRecordRepository;
 		this.categoryService = categoryService;
 		this.storageService = storageService;
 		this.vehicleImageRepository = vehicleImageRepository;
+		this.llmService = llmService;
 	}
 
 	@Transactional(readOnly = true)
@@ -222,7 +225,7 @@ public class VehicleService {
 		vehicle.setOwnerSerial(request.ownerSerial());
 		vehicle.setColor(CategoryService.blankToNull(request.color()));
 		vehicle.setPrice(request.price());
-		vehicle.setDescription(CategoryService.blankToNull(request.description()));
+		vehicle.setDescription(llmService.generateAiDescription(request));
 		vehicle.setStatus(request.status() == null ? VehicleStatus.AVAILABLE : request.status());
 		vehicle.setCategory(category);
 		vehicle.setLocation(CategoryService.blankToNull(request.location()));
