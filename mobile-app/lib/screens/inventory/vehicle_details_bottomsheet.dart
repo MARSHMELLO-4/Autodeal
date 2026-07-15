@@ -1,8 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/components/document_viewer_screen.dart';
 import 'package:shree_ganesh_autodeal_admin/components/shareVehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/dialogs/confirm_dialog.dart';
+import 'package:shree_ganesh_autodeal_admin/dialogs/mark_sold_dialog.dart';
+import 'package:shree_ganesh_autodeal_admin/dialogs/upload_document_dialog.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/vehicle/vehicle_form_screen.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
@@ -12,6 +15,8 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
     Future<void> Function() onChanged) async {
 
   int selectedImage = 0;
+  late Future<Vehicle> vehicleFuture;
+  vehicleFuture = api.getVehicle(id);
 
   await showModalBottomSheet<void>(
     context: context,
@@ -21,7 +26,7 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
       return StatefulBuilder(
         builder: (context, setState){
           return FutureBuilder<Vehicle>(
-            future: api.getVehicle(id),
+            future: vehicleFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const SizedBox(
@@ -197,13 +202,28 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
                           leading: const Icon(Icons.description_outlined),
                           title: Text(doc.title),
                           subtitle: Text(doc.type),
+                          trailing: const Icon(Icons.visibility_outlined),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DocumentViewerScreen(
+                                  imageUrl: doc.fileUrl,
+                                  title: doc.title,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       const SizedBox(height: 16),
                       FilledButton.icon(
                         onPressed: () async {
                           await uploadDocumentFlow(context, api, vehicle.id);
-                          if (context.mounted) Navigator.pop(context);
-                          await onChanged();
+                          setState(() {
+                            vehicleFuture = api.getVehicle(id);
+                          });
+                          // if (context.mounted) Navigator.pop(context);
+                          // await onChanged();
                         },
                         icon: const Icon(Icons.upload_file),
                         label: const Text('Upload document'),
@@ -231,143 +251,4 @@ Future<void> showVehicleDetails(BuildContext context, ApiClient api, int id,
       );
     },
   );
-}
-
-Future<void> uploadDocumentFlow(
-    BuildContext context, ApiClient api, int vehicleId) async {
-  String type = 'RC';
-  final titleController = TextEditingController();
-  try {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Upload document'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: type,
-                    items: [
-                      'RC',
-                      'INSURANCE',
-                      'PUC',
-                      'NOC',
-                      'FORM_29',
-                      'FORM_30',
-                      'SALE_INVOICE',
-                      'OTHER'
-                    ]
-                        .map((item) =>
-                            DropdownMenuItem(value: item, child: Text(item)))
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => type = value ?? 'OTHER'),
-                    decoration: const InputDecoration(labelText: 'Type'),
-                  ),
-                  TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(labelText: 'Title')),
-                ],
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel')),
-                FilledButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Pick file')),
-              ],
-            );
-          },
-        );
-      },
-    );
-    if (confirmed != true) return;
-    final result = await FilePicker.pickFiles(withData: false);
-    final file = result?.files.single;
-    if (file?.path == null) return;
-    await api.uploadDocument(
-      vehicleId: vehicleId,
-      path: file!.path!,
-      title: titleController.text.trim().isEmpty
-          ? file.name
-          : titleController.text.trim(),
-      type: type,
-    );
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Document uploaded')));
-    }
-  } finally {
-    titleController.dispose();
-  }
-}
-
-Future<void> markSoldFlow(
-    BuildContext context, ApiClient api, Vehicle vehicle) async {
-  final priceController =
-      TextEditingController(text: vehicle.price.toStringAsFixed(0));
-  final buyerNameController = TextEditingController();
-  final buyerPhoneController = TextEditingController();
-  final notesController = TextEditingController();
-  try {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Mark as sold'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Sale price')),
-                TextField(
-                    controller: buyerNameController,
-                    decoration: const InputDecoration(labelText: 'Buyer name')),
-                TextField(
-                    controller: buyerPhoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration:
-                        const InputDecoration(labelText: 'Buyer phone')),
-                TextField(
-                    controller: notesController,
-                    decoration: const InputDecoration(labelText: 'Notes')),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel')),
-            FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Save sale')),
-          ],
-        );
-      },
-    );
-    if (confirmed != true) return;
-    await api.markSold(
-      vehicleId: vehicle.id,
-      salePrice: double.parse(priceController.text),
-      buyerName: buyerNameController.text.trim(),
-      buyerPhone: buyerPhoneController.text.trim(),
-      notes: notesController.text.trim(),
-    );
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Sale saved')));
-    }
-  } finally {
-    priceController.dispose();
-    buyerNameController.dispose();
-    buyerPhoneController.dispose();
-    notesController.dispose();
-  }
 }

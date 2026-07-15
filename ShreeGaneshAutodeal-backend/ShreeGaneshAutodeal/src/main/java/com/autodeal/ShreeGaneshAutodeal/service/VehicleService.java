@@ -100,7 +100,10 @@ public class VehicleService {
 		VehicleDocument document = new VehicleDocument();
 		document.setVehicle(vehicle);
 		document.setType(type == null ? DocumentType.OTHER : type);
-		document.setTitle(title == null || title.isBlank() ? defaultDocumentTitle(file) : title.trim());
+		document.setTitle("%s - %s".formatted(
+				vehicle.getTitle() + " " +  vehicle.getRegistrationNumber(),
+				type == null ? "OTHER" : type.name()
+		)); //document name logic should be handled at the backend itself
 		document.setFileUrl(storedDocument.fileUrl());
 		document.setStoragePath(storedDocument.storagePath());
 		document.setContentType(storedDocument.contentType());
