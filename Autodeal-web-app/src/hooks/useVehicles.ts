@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getVehicles } from "../api";
+import { getVehicles } from "../api/api-client";
 
-export function useVehicles(filters){
+export function useVehicles(filters : any){
 
     const [vehicles,setVehicles]=useState([]);
     const [loading,setLoading]=useState(false);

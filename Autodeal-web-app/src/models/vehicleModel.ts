@@ -1,4 +1,5 @@
-import type { categoryModel } from "./CategoryModel";
+import type { categoryModel } from "./categoryModel";
+
 
 export interface VehicleModel {
   id: number;

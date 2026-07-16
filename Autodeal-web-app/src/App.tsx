@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { Bike, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { Bike, ShieldCheck, Star } from "lucide-react";
 import { getCategories, getVehicle, getVehicles } from "./api/api-client";
 
 import Header from "./layout/Header";

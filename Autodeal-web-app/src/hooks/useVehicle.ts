@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getVehicles } from "../api";
+import { getVehicle } from "../api/api-client";
 
-export function useVehicle(id){
+export function useVehicle(id : string){
 
     const [vehicle,setVehicle]=useState();
     const [loading,setLoading]=useState(false);
