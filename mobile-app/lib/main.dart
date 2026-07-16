@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/home/admin_home.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  print("API URL: ${dotenv.env['API_BASE_URL']}");
   runApp(const AutodealAdminApp());
 }
 
