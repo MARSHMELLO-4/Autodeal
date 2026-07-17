@@ -219,7 +219,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
       {/* CTA */}
       <div className="sticky bottom-0 grid grid-cols-2 gap-4 rounded-3xl bg-white p-5 shadow-2xl">
         <a
-          href="tel:+919999999999"
+          href="tel:+918982883521"
           className="flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[var(--maroon)] to-[var(--maroon-dark)] py-4 text-base font-bold text-white transition hover:scale-[1.02]"
         >
           <Phone size={20} />
@@ -227,7 +227,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         </a>
 
         <a
-          href="https://wa.me/919999999999"
+          href="https://wa.me/918982883521"
           className="flex items-center justify-center gap-3 rounded-2xl border border-green-500 py-4 text-base font-bold text-green-600 transition hover:bg-green-50"
         >
           <MessageCircle size={20} />
