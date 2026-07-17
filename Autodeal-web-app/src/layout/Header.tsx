@@ -50,7 +50,7 @@ const Header = () => {
           <div className="hidden items-center gap-3 md:flex">
 
             <a
-              href="https://wa.me/919999999999"
+              href="https://wa.me/918982883521"
               className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--ink)] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-green-500 hover:text-green-600 hover:shadow-md"
             >
               <MessageCircle size={18} />
@@ -58,7 +58,7 @@ const Header = () => {
             </a>
 
             <a
-              href="tel:+919999999999"
+              href="tel:+918982883521"
               className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--maroon)] to-[var(--maroon-dark)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
             >
               <Phone size={18} />

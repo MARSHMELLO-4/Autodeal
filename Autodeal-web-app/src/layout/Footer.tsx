@@ -116,7 +116,7 @@ const WhyUs = () => {
     </a>
 
     <a
-      href="https://wa.me/919999999999"
+      href="https://wa.me/918982883521"
       className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-white px-5 py-4 transition-all duration-300 hover:border-green-500 hover:shadow-md"
     >
       <div>
@@ -135,7 +135,7 @@ const WhyUs = () => {
     </a>
 
     <a
-      href="tel:+919999999999"
+      href="tel:+918982883521"
       className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-white px-5 py-4 transition-all duration-300 hover:border-blue-500 hover:shadow-md"
     >
       <div>
@@ -145,7 +145,7 @@ const WhyUs = () => {
         </p>
 
         <p className="font-semibold text-[var(--ink)]">
-          +91 99999 99999
+          +91 8982883521
         </p>
 
       </div>
@@ -196,10 +196,10 @@ const WhyUs = () => {
                 <h3 className="font-semibold">Phone</h3>
 
                 <a
-                  href="tel:+919999999999"
+                  href="tel:+918982883521"
                   className="text-white/80 hover:text-white"
                 >
-                  +91 99999 99999
+                  +91 8982883521
                 </a>
               </div>
             </div>
@@ -237,14 +237,14 @@ const WhyUs = () => {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <a
-              href="tel:+919999999999"
+              href="tel:+918982883521"
               className="rounded-full bg-white px-6 py-3 font-semibold text-[var(--maroon)] transition hover:scale-105"
             >
               Call Now
             </a>
 
             <a
-              href="https://wa.me/919999999999"
+              href="https://wa.me/918982883521"
               className="flex items-center gap-2 rounded-full border border-white px-6 py-3 font-semibold transition hover:bg-white hover:text-[var(--maroon)]"
             >
               <MessageCircle size={18} />
