@@ -19,6 +19,20 @@ The system enables the dealership owner to manage inventory through a Flutter mo
 - View sales reports
 - Manage inventory from mobile
 
+# 📱 Mobile Application
+
+<p align="center">
+  <img src="screenshots/inventory.jpeg" width="220"/>
+  <img src="screenshots/vehicle-details.jpeg" width="220"/>
+  <img src="screenshots/upload-document.jpeg" width="220"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/add-bike.jpeg" width="220"/>
+  <img src="screenshots/sales-report.jpeg" width="220"/>
+</p>
+
+
 ### Customer Web Application
 - Browse available vehicles
 - Search vehicles
@@ -27,6 +41,12 @@ The system enables the dealership owner to manage inventory through a Flutter mo
 - View multiple vehicle images
 - View detailed specifications
 - Responsive design
+
+<p align="center">
+  <a href="https://autodeal-taupe.vercel.app/" target="_blank">
+    Visit Live Website
+  </a>
+</p>
 
 ### Backend
 - REST APIs
