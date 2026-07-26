@@ -2,6 +2,7 @@ package com.autodeal.ShreeGaneshAutodeal.dto;
 
 import com.autodeal.ShreeGaneshAutodeal.domain.FuelType;
 import com.autodeal.ShreeGaneshAutodeal.domain.VehicleStatus;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -29,5 +30,5 @@ public record VehicleDetailResponse(
 		List<VehicleDocumentResponse> documents,
 		List<SaleRecordResponse> sales,
 		Instant createdAt,
-		Instant updatedAt) {
+		Instant updatedAt) implements Serializable {
 }

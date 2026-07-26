@@ -1,5 +1,6 @@
 package com.autodeal.ShreeGaneshAutodeal.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -10,5 +11,5 @@ public record SalesReportResponse(
 		long reservedVehicles,
 		long soldVehicles,
 		BigDecimal averageSalePrice,
-		List<SaleRecordResponse> sales) {
+		List<SaleRecordResponse> sales) implements Serializable {
 }

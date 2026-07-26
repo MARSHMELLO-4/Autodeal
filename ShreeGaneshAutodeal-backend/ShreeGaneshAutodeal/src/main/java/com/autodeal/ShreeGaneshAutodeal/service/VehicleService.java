@@ -1,5 +1,6 @@
 package com.autodeal.ShreeGaneshAutodeal.service;
 
+import com.autodeal.ShreeGaneshAutodeal.config.CacheNames;
 import com.autodeal.ShreeGaneshAutodeal.domain.Category;
 import com.autodeal.ShreeGaneshAutodeal.domain.DocumentType;
 import com.autodeal.ShreeGaneshAutodeal.domain.SaleRecord;
@@ -24,6 +25,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +61,8 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.VEHICLE_SEARCHES,
+			key = "T(com.autodeal.ShreeGaneshAutodeal.config.CacheKeys).vehicleSearch(#search, #categorySlug, #status, #minPrice, #maxPrice, #pageable)")
 	public Page<VehicleSummaryResponse> search(String search, String categorySlug, VehicleStatus status,
 			BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
 		Pageable effectivePageable = pageable.getSort().isSorted()
@@ -69,31 +75,56 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#id")
 	public VehicleDetailResponse getPublicDetail(Long id) {
 		return toDetail(getEntity(id), false);
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#id")
 	public VehicleDetailResponse getAdminDetail(Long id) {
 		return toDetail(getEntity(id), true);
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
+	})
 	public VehicleDetailResponse create(VehicleRequest request) {
 		Vehicle vehicle = new Vehicle();
 		apply(vehicle, request);
 		return toDetail(vehicleRepository.save(vehicle), true);
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_IMAGES, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
+	})
 	public VehicleDetailResponse update(Long id, VehicleRequest request) {
 		Vehicle vehicle = getEntity(id);
 		apply(vehicle, request);
 		return toDetail(vehicle, true);
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_IMAGES, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_DOCUMENTS, key = "#id"),
+			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
+	})
 	public void delete(Long id) {
 		vehicleRepository.delete(getEntity(id));
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_DOCUMENTS, key = "#vehicleId")
+	})
 	public VehicleDocumentResponse uploadDocument(Long vehicleId, DocumentType type, String title, MultipartFile file) {
 		Vehicle vehicle = getEntity(vehicleId);
 		StoredDocument storedDocument = storageService.uploadVehicleDocument(vehicleId, file);
@@ -111,6 +142,12 @@ public class VehicleService {
 		return toDocumentResponse(documentRepository.save(document));
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_IMAGES, key = "#vehicleId")
+	})
 	public List<VehicleImageResponse> uploadImages(Long vehicleId, List<MultipartFile> files, Integer startOrder,
 			String altText) {
 		System.out.println("request came till service");
@@ -141,6 +178,7 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.VEHICLE_IMAGES, key = "#vehicleId")
 	public List<VehicleImageResponse> getVehicleImages(Long vehicleId) {
 
 		if (!vehicleRepository.existsById(vehicleId)) {
@@ -156,6 +194,7 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.VEHICLE_DOCUMENTS, key = "#vehicleId")
 	public List<VehicleDocumentResponse> getDocuments(Long vehicleId) {
 		if (!vehicleRepository.existsById(vehicleId)) {
 			throw new EntityNotFoundException("Vehicle not found: " + vehicleId);
@@ -165,12 +204,22 @@ public class VehicleService {
 				.toList();
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_DOCUMENTS, allEntries = true)
+	})
 	public void deleteDocument(Long documentId) {
 		VehicleDocument document = documentRepository.findById(documentId)
 				.orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
 		documentRepository.delete(document);
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
+	})
 	public SaleRecordResponse markSold(Long vehicleId, SaleRecordRequest request) {
 		Vehicle vehicle = getEntity(vehicleId);
 		if (vehicle.getStatus() == VehicleStatus.SOLD && !vehicle.getSales().isEmpty()) {
@@ -189,6 +238,8 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.SALES_REPORTS,
+			key = "T(com.autodeal.ShreeGaneshAutodeal.config.CacheKeys).salesReport(#fromDate, #toDate)")
 	public SalesReportResponse salesReport(LocalDate fromDate, LocalDate toDate) {
 		List<SaleRecordResponse> rows = saleRecordRepository.findReportRows(fromDate, toDate).stream()
 				.map(VehicleService::toSaleResponse)

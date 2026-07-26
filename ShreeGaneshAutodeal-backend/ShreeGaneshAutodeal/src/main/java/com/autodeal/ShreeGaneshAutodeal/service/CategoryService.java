@@ -1,11 +1,15 @@
 package com.autodeal.ShreeGaneshAutodeal.service;
 
+import com.autodeal.ShreeGaneshAutodeal.config.CacheNames;
 import com.autodeal.ShreeGaneshAutodeal.domain.Category;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryResponse;
 import com.autodeal.ShreeGaneshAutodeal.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ public class CategoryService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = CacheNames.CATEGORIES, key = "'all'")
 	public List<CategoryResponse> findAll() {
 		return categoryRepository.findAll(Sort.by("name")).stream()
 				.map(CategoryService::toResponse)
@@ -33,6 +38,12 @@ public class CategoryService {
 				.orElseThrow(() -> new EntityNotFoundException("Category not found: " + id));
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.CATEGORIES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, allEntries = true)
+	})
 	public CategoryResponse create(CategoryRequest request) {
 		String slug = normalizeSlug(request.slug() == null || request.slug().isBlank() ? request.name() : request.slug());
 		if (categoryRepository.existsByNameIgnoreCase(request.name())) {
@@ -46,6 +57,12 @@ public class CategoryService {
 		return toResponse(categoryRepository.save(category));
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.CATEGORIES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, allEntries = true)
+	})
 	public CategoryResponse update(Long id, CategoryRequest request) {
 		Category category = getEntity(id);
 		String slug = normalizeSlug(request.slug() == null || request.slug().isBlank() ? request.name() : request.slug());
@@ -58,6 +75,12 @@ public class CategoryService {
 		return toResponse(category);
 	}
 
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.CATEGORIES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, allEntries = true)
+	})
 	public void delete(Long id) {
 		Category category = getEntity(id);
 		categoryRepository.delete(category);

@@ -1,6 +1,7 @@
 package com.autodeal.ShreeGaneshAutodeal.dto;
 
 import com.autodeal.ShreeGaneshAutodeal.domain.DocumentType;
+import java.io.Serializable;
 import java.time.Instant;
 
 public record VehicleDocumentResponse(
@@ -12,5 +13,5 @@ public record VehicleDocumentResponse(
 		String storagePath,
 		String contentType,
 		Long fileSize,
-		Instant uploadedAt) {
+		Instant uploadedAt) implements Serializable {
 }

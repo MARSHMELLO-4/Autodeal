@@ -1,5 +1,6 @@
 package com.autodeal.ShreeGaneshAutodeal.dto;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 public record CategoryResponse(
@@ -8,5 +9,5 @@ public record CategoryResponse(
 		String slug,
 		String description,
 		Instant createdAt,
-		Instant updatedAt) {
+		Instant updatedAt) implements Serializable {
 }
