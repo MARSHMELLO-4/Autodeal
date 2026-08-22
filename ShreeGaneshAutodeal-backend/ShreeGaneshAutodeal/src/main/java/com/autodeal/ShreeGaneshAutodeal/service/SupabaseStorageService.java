@@ -25,11 +25,6 @@ public class SupabaseStorageService {
 	}
 
 	public StoredDocument uploadVehicleImage(Long vehicleId, MultipartFile file) {
-
-		System.out.println("File  : " + file);
-		System.out.println("FIle content recieved : " + file.getContentType());
-//		System.out.println("File startes with recieved : " + file.getContentType().startsWith());
-
 		if (file != null && file.getContentType() != null && !file.getContentType().startsWith("image/")) {
 			throw new DocumentStorageException("Only image files can be uploaded as vehicle photos");
 		}

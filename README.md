@@ -76,6 +76,7 @@ Autodeal/
 - Groq LLM integration for AI-generated vehicle descriptions
 - Centralized exception handling
 - Redis-backed cache for high-read endpoints
+- Comprehensive unit and slice tests with JUnit 5, Mockito, and MockMvc
 - Test profile using H2 and no-op cache
 
 ---
@@ -85,6 +86,7 @@ Autodeal/
 | Layer | Current Stack |
 | --- | --- |
 | Backend | Java 21, Spring Boot 4.1.0, Spring MVC, Spring Data JPA, Hibernate, Maven |
+| Testing | JUnit 5 (Jupiter), Mockito, MockMvc, AssertJ, H2 in-memory DB |
 | Cache | Redis through Spring Cache and Spring Data Redis |
 | Database | PostgreSQL-compatible schema, H2 for tests |
 | Storage | Supabase Storage |
@@ -291,17 +293,32 @@ flutter run
 
 ## Verification
 
-Backend tests:
+### Running Backend Unit Tests
 
 ```powershell
 cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
 .\mvnw.cmd test
 ```
 
+### Test Suite Breakdown
+
+| Test Suite | Focus / Layer | Framework / Tools |
+| --- | --- | --- |
+| `CategoryServiceTest` | Category CRUD, slug generation, name/slug uniqueness, string normalization | JUnit 5, Mockito |
+| `VehicleServiceTest` | Vehicle lifecycle, search pagination, private data isolation, image/document management, sales report | JUnit 5, Mockito |
+| `SupabaseStorageServiceTest` | File type validation, null/empty file guards, storage configuration guards | JUnit 5, Mockito |
+| `AdminControllerTest` | Admin REST APIs for categories, vehicles, multipart document/image uploads, sales | MockMvc, Mockito |
+| `CatalogControllerTest` | Public REST catalog endpoints, filtered vehicle searches, details | MockMvc, Mockito |
+| `GlobalExceptionHandlerTest` | Global error translation (404, 400, 413) and validation error maps | JUnit 5 |
+| `VehicleSpecificationsTest` | Dynamic JPA Specifications matching (search, slug, status, price range) | Spring Boot Test, H2 |
+| `SupabasePropertiesTest` | Supabase property configuration state verification | JUnit 5 |
+| `CacheKeysTests` | Deterministic cache key generation for Redis | JUnit 5 |
+| `ShreeGaneshAutodealApplicationTests` | Spring Boot context load sanity check | Spring Boot Test |
+
 Latest verification result:
 
 ```text
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
