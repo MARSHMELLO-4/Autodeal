@@ -20,5 +20,5 @@ jobs:
           cache: maven
 
       - name: Run Spring Boot tests
-        working-directory: ShreeGaneshAutodeal-backend/ShreeGaneshAutoDeal
+        working-directory: ShreeGaneshAutodeal-backend/ShreeGaneshAutodeal
         run: ./mvnw test
