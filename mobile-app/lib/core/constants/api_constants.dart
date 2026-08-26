@@ -20,6 +20,7 @@ class ApiConstants {
     if (dotenv.isInitialized) {
       return dotenv.env['ADMIN_API_KEY'] ?? '';
     }
+    print('Warning: ADMIN_API_KEY is not set in .env file.');
     return '';
   }
 
