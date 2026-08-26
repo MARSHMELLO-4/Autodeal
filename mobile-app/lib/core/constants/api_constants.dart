@@ -9,8 +9,20 @@ class ApiConstants {
   // );
 
   // for server
-  static String get apiBaseUrl =>
-      dotenv.env['API_BASE_URL']!;
+  static String get apiBaseUrl {
+    if (dotenv.isInitialized) {
+      return dotenv.env['API_BASE_URL'] ?? 'http://localhost:8080';
+    }
+    return 'http://localhost:8080';
+  }
+
+  static String get apiAdminKey {
+    if (dotenv.isInitialized) {
+      return dotenv.env['ADMIN_API_KEY'] ?? '';
+    }
+    return '';
+  }
+
 
   //for local server
   // static String get apiBaseUrl =>

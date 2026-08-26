@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shree_ganesh_autodeal_admin/core/constants/api_constants.dart';
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 import 'package:shree_ganesh_autodeal_admin/models/sales_report.dart';
@@ -12,6 +13,7 @@ class ApiClient {
   ApiClient(this.baseUrl);
 
   final String baseUrl;
+  final String adminKey = ApiConstants.apiAdminKey;
 
   Future<List<Category>> getCategories() async {
     final json = await _get('/api/admin/categories');
@@ -197,5 +199,8 @@ class ApiClient {
     }
   }
 
-  Map<String, String> get _headers => {'Content-Type': 'application/json'};
+  Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+    'X-ADMIN-KEY' : adminKey
+  };
 }

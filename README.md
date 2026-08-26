@@ -1,6 +1,6 @@
 # Shree Ganesh Autodeal
 
-Last updated: July 26, 2026
+Last updated: August 26, 2026
 
 Shree Ganesh Autodeal is a full-stack two-wheeler dealership platform with a Flutter admin app, a React customer catalog, and a Spring Boot backend. The owner can manage inventory, images, vehicle documents, categories, and sales from the mobile app, while customers can browse available vehicles through the public web catalog.
 
@@ -78,6 +78,7 @@ Autodeal/
 - Redis-backed cache for high-read endpoints
 - Comprehensive unit and slice tests with JUnit 5, Mockito, and MockMvc
 - Test profile using H2 and no-op cache
+- GitHub Actions CI pipeline for automated backend testing
 
 ---
 
