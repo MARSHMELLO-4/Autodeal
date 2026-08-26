@@ -323,6 +323,7 @@ class ApiClient {
 
   Future<dynamic> _get(String path) async {
     try {
+      print("Base URL called: $baseUrl");
       final response = await http.get(
         Uri.parse('$baseUrl$path'),
         headers: _headers,
