@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { Bike, ShieldCheck, Star } from "lucide-react";
+import { Bike } from "lucide-react";
+
 import { getCategories, getVehicle, getVehicles } from "./api/api-client";
 
 import Header from "./layout/Header";
 import FilterPanel from "./filters/FilterPanel";
-import CategoryRail from "./filters/CategoryRail";
 import VehicleCard from "./vehicle/VehicleCard";
 import VehicleDrawer from "./vehicle/VehicleDrawer";
+import WhyUs from "./layout/Footer";
 
 import type { categoryModel } from "./models/categoryModel";
 import type { filterModel } from "./models/fIltersModels";
 import type { VehicleModel } from "./models/vehicleModel";
 import type { SingleVehicleModel } from "./models/singleVehicleModel";
-import WhyUs from "./layout/Footer";
 
 function App() {
   const [categories, setCategories] = useState<categoryModel[]>([]);
@@ -31,11 +31,19 @@ function App() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /* -----------------------------------------------------------
+     LOAD CATEGORIES
+  ----------------------------------------------------------- */
+
   useEffect(() => {
     getCategories()
       .then(setCategories)
       .catch((err) => setError(err.message));
   }, []);
+
+  /* -----------------------------------------------------------
+     LOAD VEHICLES
+  ----------------------------------------------------------- */
 
   useEffect(() => {
     setLoading(true);
@@ -49,10 +57,18 @@ function App() {
       .finally(() => setLoading(false));
   }, [filters]);
 
+  /* -----------------------------------------------------------
+     ACTIVE CATEGORY
+  ----------------------------------------------------------- */
+
   const activeCategory = useMemo(
-    () => categories.find((c) => c.slug === filters.category),
-    [categories, filters.category]
+    () => categories.find((category) => category.slug === filters.category),
+    [categories, filters.category],
   );
+
+  /* -----------------------------------------------------------
+     OPEN VEHICLE
+  ----------------------------------------------------------- */
 
   function openVehicle(id: string) {
     setDetailLoading(true);
@@ -65,166 +81,121 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[var(--paper)]">
+      {/* =======================================================
+          HEADER
+      ======================================================= */}
 
       <Header />
 
-      {/* HERO */}
-      <section className="relative overflow-hidden">
+      {/* =======================================================
+          INVENTORY
+      ======================================================= */}
 
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--maroon)] via-[var(--maroon-dark)] to-sky-900" />
+      <section id="inventory" className="mx-auto max-w-7xl px-6 py-8 md:py-10">
+        {/* =====================================================
+            INVENTORY HEADER
+        ===================================================== */}
 
-        <div className="absolute inset-0 bg-black/25" />
-
-        <div className="relative mx-auto flex min-h-[80vh] max-w-7xl flex-col justify-center px-6 py-2 lg:py-6">
-
-          {/* <span className="mb-5 flex w-fit items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
-            <Sparkles size={16} />
-            Trusted Used Bike Dealer
-          </span>
-
-          <h1 className="max-w-3xl text-5xl font-black leading-tight text-white md:text-7xl">
-            Find Your
-            <span className="block text-sky-300">
-              Perfect Ride.
-            </span>
-          </h1>
-
-          <p className="mt-8 max-w-2xl text-lg leading-8 text-white/80">
-            Premium quality pre-owned motorcycles that are inspected,
-            verified and ready for the road.
-          </p> */}
-
-          <div className="mt-10">
-            <FilterPanel
-              filters={filters}
-              categories={categories}
-              setFilters={setFilters}
-            />
-          </div>
-
-          <div className="mt-9 grid gap-5 sm:grid-cols-3 mb-5">
-
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <Bike className="mb-4 text-sky-300" />
-              <h3 className="text-3xl font-bold text-white">
-                {vehicles.length}+
-              </h3>
-              <p className="text-white/70">
-                Available Bikes
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <ShieldCheck className="mb-4 text-sky-300" />
-              <h3 className="text-3xl font-bold text-white">
-                100%
-              </h3>
-              <p className="text-white/70">
-                Verified Vehicles
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <Star className="mb-4 text-sky-300" />
-              <h3 className="text-3xl font-bold text-white">
-                4.9★
-              </h3>
-              <p className="text-white/70">
-                Customer Rating
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="mx-auto mt-20 max-w-7xl px-6" >
-
-        {/* <div className="mb-8">
-
-          <h2 className="text-3xl font-bold text-[var(--ink)]">
-            Browse Categories
-          </h2>
-
-          <p className="mt-2 text-[var(--moss)]">
-            Explore motorcycles by category.
-          </p>
-
-        </div> */}
-
-        <CategoryRail
-          categories={categories}
-          filters={filters}
-          setFilters={setFilters}
-        />
-
-      </section>
-
-      {/* INVENTORY */}
-      <section className="mx-auto mt-24 max-w-7xl px-6 pb-20" id="inventory">
-
-        <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
+            <div className="mb-1 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
 
-            <span className="text-sm font-semibold uppercase tracking-widest text-[var(--maroon)]">
-              Inventory
-            </span>
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400">
+                Our Collection
+              </span>
+            </div>
 
-            <h2 className="mt-2 text-4xl font-black text-[var(--ink)]">
-              {activeCategory
-                ? activeCategory.name
-                : "Featured Motorcycles"}
-            </h2>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <h1 className="text-3xl font-black tracking-tight md:text-4xl">
+                {activeCategory ? activeCategory.name : "Featured Motorcycles"}
+              </h1>
 
+              <span className="font-display text-sm italic tracking-wide text-[var(--maroon)]/70">
+                Carefully selected · Thoroughly inspected · Ready to ride.
+              </span>
+            </div>
           </div>
 
-          <div className="rounded-full bg-[var(--maroon)] px-5 py-3 text-sm font-semibold text-white shadow-lg">
-            {vehicles.length} Bikes Found
-          </div>
+          {/* RESULT COUNT */}
 
+          <div className="shrink-0 rounded-full bg-[var(--maroon)] px-4 py-2 text-sm font-bold text-white">
+            {vehicles.length} Bikes
+          </div>
         </div>
+
+        {/* =====================================================
+            SEARCH / FILTER
+        ===================================================== */}
+
+        <div className="mb-7">
+          <FilterPanel
+            filters={filters}
+            categories={categories}
+            setFilters={setFilters}
+          />
+        </div>
+
+        {/* =====================================================
+            ERROR
+        ===================================================== */}
 
         {error && (
-          <div className="mb-10 rounded-2xl bg-red-50 p-5 text-red-600">
+          <div className="mb-8 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
             {error}
           </div>
         )}
 
+        {/* =====================================================
+            LOADING
+        ===================================================== */}
+
         {loading && (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
               <div
-                key={i}
-                className="h-96 animate-pulse rounded-3xl bg-gray-200"
+                key={index}
+                className="h-[380px] animate-pulse rounded-3xl bg-gray-200"
               />
             ))}
           </div>
         )}
 
+        {/* =====================================================
+            EMPTY STATE
+        ===================================================== */}
+
         {!loading && vehicles.length === 0 && (
-          <div className="rounded-3xl border border-dashed p-20 text-center">
+          <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-6 py-20 text-center">
+            <Bike size={44} className="mx-auto mb-5 text-gray-300" />
 
-            <Bike
-              size={50}
-              className="mx-auto mb-5 text-gray-300"
-            />
+            <h3 className="text-xl font-bold">No motorcycles found</h3>
 
-            <h3 className="text-2xl font-bold">
-              No bikes found
-            </h3>
-
-            <p className="mt-3 text-gray-500">
-              Try changing your search filters.
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
+              Try changing your search or selecting another category.
             </p>
 
+            <button
+              onClick={() =>
+                setFilters({
+                  search: "",
+                  category: "",
+                  status: "AVAILABLE",
+                })
+              }
+              className="mt-6 rounded-xl bg-[var(--maroon)] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+            >
+              Clear Filters
+            </button>
           </div>
         )}
 
+        {/* =====================================================
+            VEHICLE GRID
+        ===================================================== */}
+
         {!loading && vehicles.length > 0 && (
-          <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {vehicles.map((vehicle) => (
               <VehicleCard
                 key={vehicle.id}
@@ -234,8 +205,19 @@ function App() {
             ))}
           </div>
         )}
-
       </section>
+
+      {/* =======================================================
+          WHY US
+      ======================================================= */}
+
+      <section className="border-t border-black/5 bg-white">
+        <WhyUs />
+      </section>
+
+      {/* =======================================================
+          VEHICLE DRAWER
+      ======================================================= */}
 
       {(selectedVehicle || detailLoading) && (
         <VehicleDrawer
@@ -244,10 +226,6 @@ function App() {
           setSelectedVehicle={setSelectedVehicle}
         />
       )}
-
-      <div className="#why-us">
-        <WhyUs/>
-      </div>
     </main>
   );
 }
