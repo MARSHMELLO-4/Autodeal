@@ -1,4 +1,4 @@
-import { Bike, Phone, MessageCircle, Menu, ShieldCheck } from "lucide-react";
+import { Phone, MessageCircle, Menu, ShieldCheck } from "lucide-react";
 
 const Header = () => {
   return (
