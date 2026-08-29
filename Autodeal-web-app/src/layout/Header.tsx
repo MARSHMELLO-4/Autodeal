@@ -9,7 +9,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center">
-              <img src="src\assets\sga_logo.jpg" alt="Shop Banner" className="rounded-4xl" />
+              <img src="public\sga_logo.jpg" alt="Shop Banner" className="rounded-4xl" />
             </div>
 
             <div>
