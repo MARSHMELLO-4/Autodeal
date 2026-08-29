@@ -324,11 +324,13 @@ class ApiClient {
   Future<dynamic> _get(String path) async {
     try {
       print("Base URL called: $baseUrl");
+      final stopwatch = Stopwatch()..start();
       final response = await http.get(
         Uri.parse('$baseUrl$path'),
         headers: _headers,
       );
-
+      stopwatch.stop();
+      print('API call took: ${stopwatch.elapsedMilliseconds} ms');
       return _decode(response);
     } on http.ClientException catch (e) {
       throw ApiException(
