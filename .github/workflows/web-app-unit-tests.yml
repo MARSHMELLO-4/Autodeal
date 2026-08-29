@@ -1,15 +1,8 @@
-name: Unit Tests for React application
+name: React webapp Unit Tests
 
 on:
   push:
-    branches:
-      - main
-      - develop
-
   pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
   test:
