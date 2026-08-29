@@ -19,7 +19,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockCategories,
-      } as Response);
+      } as unknown as Response);
 
       const result = await getCategories();
       expect(result).toEqual(mockCategories);
@@ -32,7 +32,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ message: "Internal server error" }),
-      } as Response);
+      } as unknown as Response);
 
       await expect(getCategories()).rejects.toThrow("Internal server error");
     });
@@ -44,7 +44,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      } as Response);
+      } as unknown as Response);
 
       const result = await getVehicles({
         search: "Activa",
@@ -62,7 +62,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ content: [] }),
-      } as Response);
+      } as unknown as Response);
 
       await getVehicles({
         search: "",
@@ -82,7 +82,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockDetail,
-      } as Response);
+      } as unknown as Response);
 
       const result = await getVehicle("10");
       expect(result).toEqual(mockDetail);
@@ -95,7 +95,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ message: "Vehicle not found" }),
-      } as Response);
+      } as unknown as Response);
 
       await expect(getVehicle("999")).rejects.toThrow("Vehicle not found");
     });
@@ -116,7 +116,7 @@ describe("api-client", () => {
         json: async () => {
           throw new Error("Invalid JSON");
         },
-      } as Response);
+      } as unknown as Response);
 
       await expect(getCategories()).rejects.toThrow("Request failed");
     });
@@ -126,7 +126,7 @@ describe("api-client", () => {
       vi.mocked(globalThis.fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      } as Response);
+      } as unknown as Response);
 
       await getCategories();
       expect(globalThis.fetch).toHaveBeenCalledWith(
