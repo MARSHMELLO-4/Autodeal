@@ -17,9 +17,15 @@ import com.autodeal.ShreeGaneshAutodeal.service.VehicleService;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -41,10 +47,12 @@ public class AdminController {
 
 	private final CategoryService categoryService;
 	private final VehicleService vehicleService;
+	private final RedisConnectionFactory redisConnectionFactory;
 
-	public AdminController(CategoryService categoryService, VehicleService vehicleService) {
+	public AdminController(CategoryService categoryService, VehicleService vehicleService, RedisConnectionFactory redisConnectionFactory) {
 		this.categoryService = categoryService;
 		this.vehicleService = vehicleService;
+		this.redisConnectionFactory = redisConnectionFactory;
 	}
 
 	@GetMapping("/categories")
@@ -152,5 +160,38 @@ public class AdminController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 		return vehicleService.salesReport(from, to);
+	}
+
+
+	@GetMapping("/redis-stats")
+	public Map<String, Object> getRedisStats() {
+
+		try (RedisConnection connection = redisConnectionFactory.getConnection()) {
+
+			Properties stats = connection.serverCommands().info("stats");
+
+			long hits = Long.parseLong(
+					stats.getProperty("keyspace_hits", "0")
+			);
+
+			long misses = Long.parseLong(
+					stats.getProperty("keyspace_misses", "0")
+			);
+
+			long total = hits + misses;
+
+			double hitRatio = total == 0
+					? 0
+					: (double) hits / total * 100;
+
+			Map<String, Object> result = new HashMap<>();
+
+			result.put("keyspace_hits", hits);
+			result.put("keyspace_misses", misses);
+			result.put("total_operations", total);
+			result.put("hit_ratio_percent", hitRatio);
+
+			return result;
+		}
 	}
 }
