@@ -14,7 +14,7 @@ public class ShreeGaneshAutodealApplication {
 
 		SpringApplication.run(ShreeGaneshAutodealApplication.class, args);
 
-		System.out.println("Server Started Successfully at 9090");
+		System.out.println("Server Started Successfully at 8080");
 	}
 
 }

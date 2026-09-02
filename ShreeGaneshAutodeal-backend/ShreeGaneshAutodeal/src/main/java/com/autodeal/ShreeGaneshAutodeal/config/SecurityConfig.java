@@ -35,6 +35,10 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
+                                "/api/subscribers/**"
+                        ).permitAll()
+
+                        .requestMatchers(
                                 "/api/admin/**"
                         ).authenticated()
 
