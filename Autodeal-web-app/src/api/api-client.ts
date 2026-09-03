@@ -1,9 +1,26 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-async function request(path : string) {
+async function request(path: string) {
   const response = await fetch(`${API_BASE_URL}${path}`);
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed" }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: "Request failed" }));
+    throw new Error(error.message || "Request failed");
+  }
+  return response.json();
+}
+
+async function postRequest(path: string, data: any) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ message: "Request failed" }));
     throw new Error(error.message || "Request failed");
   }
   return response.json();
@@ -13,14 +30,16 @@ export function getCategories() {
   return request("/api/catalog/categories");
 }
 
-export function getVehicles(filters : any) {
+export function getVehicles(filters: any) {
   const params = new URLSearchParams({ page: "0", size: "60" });
   if (filters.search) params.set("search", filters.search);
   if (filters.category) params.set("category", filters.category);
-  if (filters.status && filters.status !== "ALL") params.set("status", filters.status);
+  if (filters.status && filters.status !== "ALL")
+    params.set("status", filters.status);
   return request(`/api/catalog/vehicles?${params.toString()}`);
 }
 
-export function getVehicle(id : string) {
+export function getVehicle(id: string) {
   return request(`/api/catalog/vehicles/${id}`);
 }
+

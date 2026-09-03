@@ -14,12 +14,15 @@ import type { categoryModel } from "./models/categoryModel";
 import type { filterModel } from "./models/fIltersModels";
 import type { VehicleModel } from "./models/vehicleModel";
 import type { SingleVehicleModel } from "./models/singleVehicleModel";
+import SubscribeForm from "./layout/SubscribeForm";
 
 function App() {
   const [categories, setCategories] = useState<categoryModel[]>([]);
   const [vehicles, setVehicles] = useState<VehicleModel[]>([]);
   const [selectedVehicle, setSelectedVehicle] =
     useState<SingleVehicleModel | null>(null);
+
+  const [showSubscribe, setShowSubscribe] = useState(false);
 
   const [filters, setFilters] = useState<filterModel>({
     search: "",
@@ -81,21 +84,24 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[var(--paper)]">
-      {/* =======================================================
-          HEADER
-      ======================================================= */}
+      {showSubscribe && <SubscribeForm onClose={() => setShowSubscribe(false)} />}
+      <div className="sticky top-0 z-50 border-b border-black/5 bg-white relative">
+        <Header />
 
-      <Header />
+        <div className="absolute right-6 top-1/2 z-[100] flex -translate-y-1/2 items-center gap-3">
+          <button
+            className="rounded-xl border-2 border-[var(--maroon)] bg-[var(--maroon)] px-4 py-2 text-sm font-bold text-white transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
 
-      {/* =======================================================
-          INVENTORY
-      ======================================================= */}
+            onClick = {() => {
+              setShowSubscribe(true)
+            }}
+          >
+            Subscribe
+          </button>
+        </div>
+      </div>
 
       <section id="inventory" className="mx-auto max-w-7xl px-6 py-8 md:py-10">
-        {/* =====================================================
-            INVENTORY HEADER
-        ===================================================== */}
-
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="mb-1 flex items-center gap-2">
@@ -117,16 +123,10 @@ function App() {
             </div>
           </div>
 
-          {/* RESULT COUNT */}
-
           <div className="shrink-0 rounded-full bg-[var(--maroon)] px-4 py-2 text-sm font-bold text-white">
             {vehicles.length} Bikes
           </div>
         </div>
-
-        {/* =====================================================
-            SEARCH / FILTER
-        ===================================================== */}
 
         <div className="mb-7">
           <FilterPanel
@@ -136,19 +136,11 @@ function App() {
           />
         </div>
 
-        {/* =====================================================
-            ERROR
-        ===================================================== */}
-
         {error && (
           <div className="mb-8 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
             {error}
           </div>
         )}
-
-        {/* =====================================================
-            LOADING
-        ===================================================== */}
 
         {loading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -160,10 +152,6 @@ function App() {
             ))}
           </div>
         )}
-
-        {/* =====================================================
-            EMPTY STATE
-        ===================================================== */}
 
         {!loading && vehicles.length === 0 && (
           <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-6 py-20 text-center">
