@@ -12,19 +12,19 @@ async function request(path: string) {
   return response.json();
 }
 
-async function postRequest(path: string, data: any) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
-  });
+// async function postRequest(path: string, data: any) {
+//   const response = await fetch(`${API_BASE_URL}${path}`, {
+//     method: "POST",
+//   });
 
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
-  }
-  return response.json();
-}
+//   if (!response.ok) {
+//     const error = await response
+//       .json()
+//       .catch(() => ({ message: "Request failed" }));
+//     throw new Error(error.message || "Request failed");
+//   }
+//   return response.json();
+// }
 
 export function getCategories() {
   return request("/api/catalog/categories");
