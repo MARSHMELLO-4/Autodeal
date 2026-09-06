@@ -20,7 +20,7 @@ public class EmailService {
 
     private String subject = "Verification Mail - Shree Ganesh Autodeal";
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail.from}")
     private String senderMail;
 
     public void sendOtpEmail(String email, String otp) {
