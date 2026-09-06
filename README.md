@@ -1,10 +1,10 @@
 # Shree Ganesh Autodeal
 
-Last updated: August 29, 2026
+Last updated: September 2026
 
-Shree Ganesh Autodeal is a full-stack two-wheeler dealership platform with a Flutter admin app, a React customer catalog, and a Spring Boot backend. The owner can manage inventory, images, vehicle documents, categories, and sales from the mobile app, while customers can browse available vehicles through the public web catalog.
+Shree Ganesh Autodeal is a full-stack two-wheeler dealership platform with a Flutter admin app, a React customer catalog, and a Spring Boot backend. The owner can manage inventory, images, vehicle documents, categories, and sales from the mobile app, while customers can browse available vehicles through the public web catalog and subscribe to email alerts for newly listed inventory.
 
-The backend includes Redis-backed caching for read-heavy catalog and reporting endpoints, targeted cache eviction whenever inventory data changes, centralized exception handling, and API-key based protection for admin APIs.
+The backend includes Redis-backed caching for read-heavy catalog and reporting endpoints, RabbitMQ-backed asynchronous task processing for subscriber email notifications and Groq LLM vehicle description generation, transaction-safe event dispatching, targeted cache eviction on inventory mutations, and API-key based protection for admin APIs.
 
 ---
 
@@ -85,26 +85,37 @@ Autodeal/
 - Search vehicles
 - Filter by category and status
 - View vehicle images and detailed specifications
+- Subscribe to vehicle availability email notifications with OTP verification
 - Responsive customer-facing layout
 - Access public catalog APIs without authentication
 - Unit testing with Vitest and React Testing Library
 
 ### Spring Boot Backend
 
-- REST APIs for admin and public catalog flows
+- REST APIs for admin, customer catalog, and newsletter subscriber flows
 - API-key based authentication for admin APIs
-- Public access for customer catalog APIs
+- Public access for customer catalog and subscriber APIs
 - DTO-first API responses
 - Pagination, search, and dynamic filtering
 - PostgreSQL persistence through Spring Data JPA
 - Supabase Storage integration for vehicle media and documents
-- Groq LLM integration for AI-generated vehicle descriptions
-- Centralized exception handling
-- Redis-backed cache for high-read endpoints
+- **RabbitMQ Asynchronous Messaging**:
+  - `vehicle_create` queue: Dispatches new vehicle alerts to all active subscribers via email in the background
+  - `vehicle_llm_description` queue: Asynchronously generates rich sales copy via Groq LLM without blocking vehicle creation
+- **Transaction-Safe Post-Commit Dispatch**:
+  - Leverages Spring `TransactionSynchronizationManager.afterCommit()` to ensure RabbitMQ messages are only dispatched *after* the database transaction has committed, eliminating race conditions
+- **Subscriber Onboarding with OTP Verification**:
+  - Secure 6-digit OTP generation stored in Redis with a 5-minute TTL
+  - Instant OTP email delivery via Brevo / Gmail SMTP
+  - Verification activates the subscriber for inventory alerts
+- **Groq LLM Integration**:
+  - Automated automotive sales copywriting powered by Groq API
+  - Formats vehicle specifications (brand, model, variant, year, km, price) into compelling dealership sales pitches
+- Centralized exception handling with structured JSON error responses
+- Redis-backed cache for high-read catalog endpoints
 - Targeted cache eviction on inventory mutations
-- Comprehensive unit and slice tests with JUnit 5, Mockito, and MockMvc
-- Test profile using H2 and no-op cache
-- GitHub Actions CI pipeline for automated backend testing
+- Comprehensive unit and slice tests (110 backend unit tests, 54 web app tests)
+- GitHub Actions CI pipeline for automated backend and frontend testing
 
 ---
 
@@ -113,6 +124,9 @@ Autodeal/
 | Layer | Current Stack |
 | --- | --- |
 | Backend | Java 21, Spring Boot 4.1.0, Spring MVC, Spring Data JPA, Hibernate, Maven |
+| Messaging | RabbitMQ via Spring AMQP (`spring-boot-starter-amqp`) |
+| Email | Spring Mail (`spring-boot-starter-mail`) via Brevo / Gmail SMTP |
+| LLM | Groq API (`llama-3.3-70b-versatile` / configured model) |
 | Security | Spring Security, API key authentication |
 | Testing | JUnit 5 (Jupiter), Mockito, MockMvc, AssertJ, H2 in-memory DB |
 | Cache | Redis through Spring Cache and Spring Data Redis |
@@ -128,43 +142,48 @@ Autodeal/
 ## Architecture
 
 ```text
-                         React Customer Web App
-                                  |
-                                  | Public GET requests
-                                  v
-                           Public Catalog APIs
-                                  |
-                                  v
-                           Spring Boot Backend
-                                  |
-                   +--------------+--------------+
-                   |                             |
-           Spring Security                 Admin API Key
-                   |                         Validation
-                   |                             |
-                   +--------------+--------------+
-                                  |
-                                  v
-                               Services
-                                  |
-                       +----------+----------+
-                       |          |          |
-                       v          v          v
-                  PostgreSQL    Redis    Supabase Storage
-                                           |
-                                           +--> Vehicle media
-                                           +--> Documents
-
-Flutter Admin App
-        |
-        | X-ADMIN-KEY header
-        v
-/api/admin/**
+               React Customer Web App                    Flutter Admin App
+                        |                                       |
+                        | Public GET / Subscriber POST          | X-ADMIN-KEY
+                        v                                       v
+                Public / Subscriber APIs                   Admin APIs
+                        \                                     /
+                         \                                   /
+                          v                                 v
+                                 Spring Boot Backend
+                                          |
+                      +-------------------+-------------------+
+                      |                                       |
+                   Database                               Cache & Store
+                      |                                       |
+                PostgreSQL (Source of truth)             Redis Cache & OTP Store
+                                                         Supabase Storage (Media/Docs)
+                                          |
+                      +-------------------+-------------------+
+                      |
+             Transaction-Safe Post-Commit Hooks
+                      |
+                      v
+             RabbitMQ Message Broker
+             |
+             +---> Queue: "vehicle_create"
+             |        |
+             |        v
+             |     RabbitmqReceiver.sendNotifications()
+             |        |
+             |        v
+             |     EmailService (SMTP / Brevo) -> Active Subscribers
+             |
+             +---> Queue: "vehicle_llm_description"
+                      |
+                      v
+                   RabbitmqReceiver.generateVehicleDescription()
+                      |
+                      v
+                   LLMService (Groq API) -> Updates Vehicle Description in DB
 ```
 
-Redis is used only as a cache layer. PostgreSQL remains the source of truth.
-
-The React application consumes only public catalog APIs. The Flutter admin application sends the configured admin API key with protected admin requests.
+PostgreSQL remains the source of truth. Redis is used for catalog response caching and short-lived OTP tokens. RabbitMQ reliably offloads external network calls (email sending and Groq LLM completion) to asynchronous background threads.
 
 ---
 
@@ -203,11 +222,11 @@ The API key is validated before protected admin requests reach the controller.
 
 ### Public vs Admin APIs
 
-| API Area | Authentication | Client |
-| --- | --- | --- |
-| `/api/catalog/**` GET | None | React Web App / Anyone |
-| `/api/admin/**` | Admin API key | Flutter Admin App |
-| `/api/auth/**` | Not currently used | N/A |
+| API Area | Authentication | Client | Purpose |
+| --- | --- | --- | --- |
+| `/api/catalog/**` GET | None | React Web App / Public | Browse vehicles & categories |
+| `/api/subscribers/**` POST | None | React Web App / Public | Request & verify OTP for newsletter |
+| `/api/admin/**` | Admin API key | Flutter Admin App | Inventory, media, docs, sales |
 
 Only the public catalog GET APIs are intended to be accessed without authentication.
 
@@ -478,16 +497,18 @@ Note: the backend defaults to `PORT=8080`, while the web app currently defaults 
 
 ## API Overview
 
-### Public Catalog
+### Public Catalog & Subscriptions
 
 These endpoints are public and do not require an API key:
 
 ```text
-GET /api/catalog/categories
+GET  /api/catalog/categories
+GET  /api/catalog/vehicles
+GET  /api/catalog/vehicles/{id}
+POST /api/catalog/vehicles/sendTestNotification/{id}
 
-GET /api/catalog/vehicles
-
-GET /api/catalog/vehicles/{id}
+POST /api/subscribers/request-otp
+POST /api/subscribers/verify-otp
 ```
 
 ### Admin
@@ -579,13 +600,25 @@ cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
 .\mvnw.cmd spring-boot:run
 ```
 
-Before starting the backend, configure the required environment variables, including:
+Before starting the backend, configure the required environment variables in your environment or `application-local.properties`:
 
 ```env
-DB_URL=
-DB_USERNAME=
-DB_PASSWORD=
-ADMIN_API_KEY=
+DB_URL=jdbc:postgresql://<host>:<port>/<dbname>
+DB_USERNAME=<username>
+DB_PASSWORD=<password>
+ADMIN_API_KEY=<secure-admin-key>
+RABBITMQ_URL=amqp://<user>:<password>@<host>:<port>
+REDIS_URL=redis://<user>:<password>@<host>:<port>
+GROQ_API_KEY=<groq-api-key>
+GROQ_API_URL=https://api.groq.com/openai/v1/chat/completions
+GROQ_MODEL=llama-3.3-70b-versatile
+SUPABASE_URL=<supabase-url>
+SUPABASE_SERVICE_ROLE_KEY=<supabase-key>
+SUPABASE_STORAGE_BUCKET=vehicle-documents
+MAIL_USERNAME=<smtp-user>
+MAIL_PASSWORD=<smtp-password>
+app.mail.from=noreply@shreeganeshautodeal.com
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 ### React Web App
@@ -618,6 +651,8 @@ The Flutter application uses the admin API key for protected `/api/admin/**` req
 
 ### Running Backend Unit Tests
 
+Run the complete 110-test backend test suite:
+
 ```powershell
 cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
 
@@ -626,7 +661,7 @@ cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
 
 ### Running React Web App Unit Tests
 
-The React web application uses **Vitest** and **React Testing Library** for unit testing.
+The React web application uses **Vitest** and **React Testing Library** for unit testing (54 tests).
 
 Run the frontend unit test suite:
 
@@ -652,10 +687,18 @@ The frontend tests cover React component rendering, user interactions, API clien
 | `VehicleDetails.test.tsx` | Vehicle detail rendering and user interactions | Vitest, React Testing Library |
 | `api-client.test.ts` | API client requests, responses and error handling | Vitest |
 | `CategoryServiceTest` | Category CRUD, slug generation, name/slug uniqueness, string normalization | JUnit 5, Mockito |
-| `VehicleServiceTest` | Vehicle lifecycle, search pagination, private data isolation, image/document management, sales report | JUnit 5, Mockito |
+| `VehicleServiceTest` | Vehicle lifecycle, async RabbitMQ message queueing, post-commit dispatch, image/document management | JUnit 5, Mockito |
+| `RabbitmqSenderTest` | Asynchronous message dispatching to `vehicle_create` and `vehicle_llm_description` queues | JUnit 5, Mockito |
+| `RabbitmqReceiverTest` | Queue listener delegation to notification and vehicle services with error isolation | JUnit 5, Mockito |
+| `NotificationServiceTest` | Active subscriber querying, parameter mapping, and notification dispatch | JUnit 5, Mockito |
+| `LLMServiceTest` | Automotive sales prompt generation from Vehicle entity and VehicleRequest DTO | JUnit 5 |
+| `EmailServiceTest` | SimpleMailMessage OTP delivery and MimeMessage vehicle alert HTML rendering | JUnit 5, Mockito |
+| `SubscriberServiceTest` | Email normalization, OTP generation/validation, subscriber status lifecycle | JUnit 5, Mockito |
+| `OtpServiceTest` | Redis-backed 6-digit OTP generation, 5-minute TTL expiration, and one-time verification | JUnit 5, Mockito |
+| `SubscribeControllerTest` | REST endpoint validation for OTP request and OTP verification flows | MockMvc, Mockito |
 | `SupabaseStorageServiceTest` | File type validation, null/empty file guards, storage configuration guards | JUnit 5, Mockito |
 | `AdminControllerTest` | Admin REST APIs for categories, vehicles, multipart document/image uploads, sales | MockMvc, Mockito |
-| `CatalogControllerTest` | Public REST catalog endpoints, filtered vehicle searches, details | MockMvc, Mockito |
+| `CatalogControllerTest` | Public REST catalog endpoints, filtered vehicle searches, details, test notification | MockMvc, Mockito |
 | `GlobalExceptionHandlerTest` | Global error translation (404, 400, 413) and validation error maps | JUnit 5 |
 | `VehicleSpecificationsTest` | Dynamic JPA Specifications matching (search, slug, status, price range) | Spring Boot Test, H2 |
 | `SupabasePropertiesTest` | Supabase property configuration state verification | JUnit 5 |
