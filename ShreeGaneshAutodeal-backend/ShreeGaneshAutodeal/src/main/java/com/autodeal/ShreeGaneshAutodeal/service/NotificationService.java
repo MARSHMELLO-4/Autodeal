@@ -7,12 +7,17 @@ import com.autodeal.ShreeGaneshAutodeal.domain.Vehicle;
 import com.autodeal.ShreeGaneshAutodeal.repository.SubscriberRepository;
 import com.autodeal.ShreeGaneshAutodeal.repository.VehicleRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class NotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private final SubscriberRepository subscriberRepository;
     private final VehicleRepository vehicleRepository;
@@ -26,24 +31,31 @@ public class NotificationService {
         this.emailService = emailService;
     }
 
-    //now we have to send the notification
     public void notifySubscribers(Long vehicleId) throws MessagingException {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId).orElseThrow();
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with id: " + vehicleId));
 
-        //now we have to get all the subscribers
         List<Subscriber> subscribersList = subscriberRepository.findAllByStatus(SubscriberStatus.ACTIVE);
+        if (subscribersList.isEmpty()) {
+            log.info("No active subscribers found. Skipping vehicle notification for vehicle id: {}", vehicleId);
+            return;
+        }
+
+        String model = vehicle.getModelName() + (vehicle.getVariantName() != null && !vehicle.getVariantName().isBlank()
+                ? " " + vehicle.getVariantName()
+                : "");
+        String price = vehicle.getPrice() != null ? vehicle.getPrice().toPlainString() : "0";
 
         for (Subscriber subscriber : subscribersList) {
-            //now we have to send the notification to the  subscriber
             emailService.sendVehicleAddNotification(
                     subscriber.getEmail(),
+                    vehicle.getTitle(),
                     vehicle.getBrand(),
-                    vehicle.getVariantName(),
-                    vehicle.getManufactureYear().toString(),
-                    vehicle.getPrice().toString(),
+                    model,
+                    price,
                     vehicle.getThumbnailUrl()
             );
         }
-
+        log.info("Successfully sent vehicle notifications to {} subscribers for vehicle id: {}", subscribersList.size(), vehicleId);
     }
 }

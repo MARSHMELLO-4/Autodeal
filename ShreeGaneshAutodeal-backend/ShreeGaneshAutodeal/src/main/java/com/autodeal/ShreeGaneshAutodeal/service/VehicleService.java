@@ -34,6 +34,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -98,8 +100,8 @@ public class VehicleService {
 
 		Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
-		//send the notif
-		rabbitmqSender.sendVehicleCreated(savedVehicle.getId());
+		boolean shouldGenerateAiDescription = (savedVehicle.getDescription() == null || savedVehicle.getDescription().isBlank());
+		sendPostCommitMessages(savedVehicle.getId(), shouldGenerateAiDescription);
 
 		return toDetail(savedVehicle, true);
 	}
@@ -127,6 +129,18 @@ public class VehicleService {
 	})
 	public void delete(Long id) {
 		vehicleRepository.delete(getEntity(id));
+	}
+
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.PUBLIC_VEHICLE_DETAILS, key = "#vehicleId"),
+			@CacheEvict(cacheNames = CacheNames.ADMIN_VEHICLE_DETAILS, key = "#vehicleId")
+	})
+	public void generateAndSaveAiDescription(Long vehicleId) {
+		Vehicle vehicle = getEntity(vehicleId);
+		String aiDescription = llmService.generateAiDescription(vehicle);
+		vehicle.setDescription(aiDescription);
+		vehicleRepository.save(vehicle);
 	}
 
 	@Caching(evict = {
@@ -287,7 +301,12 @@ public class VehicleService {
 		vehicle.setOwnerSerial(request.ownerSerial());
 		vehicle.setColor(CategoryService.blankToNull(request.color()));
 		vehicle.setPrice(request.price());
-		vehicle.setDescription(llmService.generateAiDescription(request));
+		String description = CategoryService.blankToNull(request.description());
+		if (description != null) {
+			vehicle.setDescription(description);
+		} else if (vehicle.getId() == null) {
+			vehicle.setDescription(null);
+		}
 		vehicle.setStatus(request.status() == null ? VehicleStatus.AVAILABLE : request.status());
 		vehicle.setCategory(category);
 		vehicle.setLocation(CategoryService.blankToNull(request.location()));
@@ -300,6 +319,26 @@ public class VehicleService {
 		vehicle.setThumbnailUrl(CategoryService.blankToNull(request.thumbnailUrl()) == null
 				? fallbackThumbnail
 				: request.thumbnailUrl().trim());
+	}
+
+	private void sendPostCommitMessages(Long vehicleId, boolean shouldGenerateAiDescription) {
+		Runnable dispatch = () -> {
+			rabbitmqSender.sendVehicleCreated(vehicleId);
+			if (shouldGenerateAiDescription) {
+				rabbitmqSender.sendGenerateDescription(vehicleId);
+			}
+		};
+
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					dispatch.run();
+				}
+			});
+		} else {
+			dispatch.run();
+		}
 	}
 
 	private static List<VehicleImage> toImages(List<VehicleImageRequest> requests) {

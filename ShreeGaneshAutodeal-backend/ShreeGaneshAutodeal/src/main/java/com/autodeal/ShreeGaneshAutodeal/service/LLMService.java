@@ -1,5 +1,6 @@
 package com.autodeal.ShreeGaneshAutodeal.service;
 
+import com.autodeal.ShreeGaneshAutodeal.domain.Vehicle;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.llm.ChatRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.llm.ChatResponse;
@@ -24,7 +25,18 @@ public class LLMService {
     @Value("${groq.model}")
     private String model;
 
-    private final RestClient restClient = RestClient.builder().build();
+    private final RestClient restClient;
+
+    public LLMService() {
+        this.restClient = RestClient.builder().build();
+    }
+
+    public LLMService(RestClient restClient, String apiKey, String apiUrl, String model) {
+        this.restClient = restClient;
+        this.apiKey = apiKey;
+        this.apiUrl = apiUrl;
+        this.model = model;
+    }
 
     private static final String SYSTEM_PROMPT = """
             You are an expert automotive sales copywriter.
@@ -43,12 +55,19 @@ public class LLMService {
             """;
 
     public String generateAiDescription(VehicleRequest request) {
+        return executeChatCompletion(buildPrompt(request));
+    }
 
+    public String generateAiDescription(Vehicle vehicle) {
+        return executeChatCompletion(buildPrompt(vehicle));
+    }
+
+    private String executeChatCompletion(String userPrompt) {
         ChatRequest chatRequest = new ChatRequest(
                 model,
                 List.of(
                         new Message("system", SYSTEM_PROMPT),
-                        new Message("user", buildPrompt(request))
+                        new Message("user", userPrompt)
                 ),
                 0.7
         );
@@ -74,8 +93,7 @@ public class LLMService {
                 .trim();
     }
 
-    private String buildPrompt(VehicleRequest request) {
-
+    public String buildPrompt(VehicleRequest request) {
         return """
                 Generate a sales description for the following used vehicle.
 
@@ -109,6 +127,43 @@ public class LLMService {
                         request.color(),
                         request.price(),
                         request.location()
+                );
+    }
+
+    public String buildPrompt(Vehicle vehicle) {
+        return """
+                Generate a sales description for the following used vehicle.
+
+                Vehicle Details:
+
+                Title: %s
+                Brand: %s
+                Model: %s
+                Variant: %s
+                Manufacturing Year: %d
+                Registration Year: %s
+                Fuel Type: %s
+                Kilometers Driven: %d km
+                Number of Owners: %s
+                Color: %s
+                Price: ₹%s
+                Location: %s
+
+                Return only the description.
+                """
+                .formatted(
+                        vehicle.getTitle(),
+                        vehicle.getBrand(),
+                        vehicle.getModelName(),
+                        vehicle.getVariantName(),
+                        vehicle.getManufactureYear(),
+                        vehicle.getRegistrationYear(),
+                        vehicle.getFuelType(),
+                        vehicle.getKilometersDriven(),
+                        vehicle.getOwnerSerial(),
+                        vehicle.getColor(),
+                        vehicle.getPrice(),
+                        vehicle.getLocation()
                 );
     }
 

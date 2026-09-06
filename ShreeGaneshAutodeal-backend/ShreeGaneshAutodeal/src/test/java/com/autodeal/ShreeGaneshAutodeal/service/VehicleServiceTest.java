@@ -3,6 +3,7 @@ package com.autodeal.ShreeGaneshAutodeal.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -232,7 +233,7 @@ class VehicleServiceTest {
 	class CreateTests {
 
 		@Test
-		@DisplayName("Should create vehicle with AI description and fallback thumbnail")
+		@DisplayName("Should create vehicle, fallback thumbnail, and dispatch RabbitMQ messages for notification and LLM")
 		void shouldCreateVehicleSuccessfully() {
 			VehicleRequest request = new VehicleRequest(
 					"Honda Activa 6G", "MH14CD5678", "Honda", "Activa 6G", "Deluxe",
@@ -246,7 +247,6 @@ class VehicleServiceTest {
 			);
 
 			when(categoryService.getEntity(1L)).thenReturn(testCategory);
-			when(llmService.generateAiDescription(request)).thenReturn("AI generated sales pitch");
 			when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(inv -> {
 				Vehicle v = inv.getArgument(0);
 				v.setId(200L);
@@ -258,10 +258,38 @@ class VehicleServiceTest {
 			assertThat(response).isNotNull();
 			assertThat(response.id()).isEqualTo(200L);
 			assertThat(response.title()).isEqualTo("Honda Activa 6G");
-			assertThat(response.description()).isEqualTo("AI generated sales pitch");
+			assertThat(response.description()).isNull();
 			assertThat(response.thumbnailUrl()).isEqualTo("https://example.com/img1.jpg");
-			verify(llmService).generateAiDescription(request);
 			verify(vehicleRepository).save(any(Vehicle.class));
+			verify(rabbitmqSender).sendVehicleCreated(200L);
+			verify(rabbitmqSender).sendGenerateDescription(200L);
+		}
+
+		@Test
+		@DisplayName("Should create vehicle with manual description without queueing LLM generation")
+		void shouldCreateVehicleWithManualDescription() {
+			VehicleRequest request = new VehicleRequest(
+					"Honda Activa 6G", "MH14CD5678", "Honda", "Activa 6G", "Deluxe",
+					2023, 2023, 5000, FuelType.PETROL, 1, "White",
+					new BigDecimal("75000"), "Manual seller description", VehicleStatus.AVAILABLE, 1L,
+					"https://example.com/thumb.jpg", "Pune", null
+			);
+
+			when(categoryService.getEntity(1L)).thenReturn(testCategory);
+			when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(inv -> {
+				Vehicle v = inv.getArgument(0);
+				v.setId(201L);
+				return v;
+			});
+
+			VehicleDetailResponse response = vehicleService.create(request);
+
+			assertThat(response).isNotNull();
+			assertThat(response.id()).isEqualTo(201L);
+			assertThat(response.description()).isEqualTo("Manual seller description");
+			verify(vehicleRepository).save(any(Vehicle.class));
+			verify(rabbitmqSender).sendVehicleCreated(201L);
+			verify(rabbitmqSender, never()).sendGenerateDescription(anyLong());
 		}
 	}
 
@@ -275,13 +303,12 @@ class VehicleServiceTest {
 			VehicleRequest request = new VehicleRequest(
 					"Updated Title", "MH12AB1234", "Royal Enfield", "Classic 350", "Signals",
 					2022, 2022, 15000, FuelType.PETROL, 1, "Black",
-					new BigDecimal("190000"), null, VehicleStatus.RESERVED, 1L,
+					new BigDecimal("190000"), "Updated custom description", VehicleStatus.RESERVED, 1L,
 					"https://example.com/custom-thumb.jpg", "Mumbai", null
 			);
 
 			when(vehicleRepository.findById(100L)).thenReturn(Optional.of(testVehicle));
 			when(categoryService.getEntity(1L)).thenReturn(testCategory);
-			when(llmService.generateAiDescription(request)).thenReturn("Updated AI description");
 
 			VehicleDetailResponse response = vehicleService.update(100L, request);
 
@@ -289,7 +316,26 @@ class VehicleServiceTest {
 			assertThat(response.price()).isEqualTo(new BigDecimal("190000"));
 			assertThat(response.status()).isEqualTo(VehicleStatus.RESERVED);
 			assertThat(response.color()).isEqualTo("Black");
+			assertThat(response.description()).isEqualTo("Updated custom description");
 			assertThat(response.thumbnailUrl()).isEqualTo("https://example.com/custom-thumb.jpg");
+		}
+	}
+
+	@Nested
+	@DisplayName("generateAndSaveAiDescription Tests")
+	class GenerateAndSaveAiDescriptionTests {
+
+		@Test
+		@DisplayName("Should generate and persist AI description for vehicle")
+		void shouldGenerateAndSaveAiDescriptionSuccessfully() {
+			when(vehicleRepository.findById(100L)).thenReturn(Optional.of(testVehicle));
+			when(llmService.generateAiDescription(testVehicle)).thenReturn("AI generated sales copy");
+
+			vehicleService.generateAndSaveAiDescription(100L);
+
+			assertThat(testVehicle.getDescription()).isEqualTo("AI generated sales copy");
+			verify(llmService).generateAiDescription(testVehicle);
+			verify(vehicleRepository).save(testVehicle);
 		}
 	}
 
