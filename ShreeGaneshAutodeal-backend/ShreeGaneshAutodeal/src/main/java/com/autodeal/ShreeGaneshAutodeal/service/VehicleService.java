@@ -47,10 +47,11 @@ public class VehicleService {
 	private final SupabaseStorageService storageService;
 	private final VehicleImageRepository vehicleImageRepository;
 	private final LLMService llmService;
+	private final RabbitmqSender rabbitmqSender;
 
 	public VehicleService(VehicleRepository vehicleRepository, VehicleDocumentRepository documentRepository,
 			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService,
-						  VehicleImageRepository vehicleImageRepository, LLMService llmService ) {
+						  VehicleImageRepository vehicleImageRepository, LLMService llmService, RabbitmqSender rabbitmqSender ) {
 		this.vehicleRepository = vehicleRepository;
 		this.documentRepository = documentRepository;
 		this.saleRecordRepository = saleRecordRepository;
@@ -58,6 +59,7 @@ public class VehicleService {
 		this.storageService = storageService;
 		this.vehicleImageRepository = vehicleImageRepository;
 		this.llmService = llmService;
+		this.rabbitmqSender = rabbitmqSender;
 	}
 
 	@Transactional(readOnly = true)
@@ -93,7 +95,13 @@ public class VehicleService {
 	public VehicleDetailResponse create(VehicleRequest request) {
 		Vehicle vehicle = new Vehicle();
 		apply(vehicle, request);
-		return toDetail(vehicleRepository.save(vehicle), true);
+
+		Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+		//send the notif
+		rabbitmqSender.sendVehicleCreated(savedVehicle.getId());
+
+		return toDetail(savedVehicle, true);
 	}
 
 	@Caching(evict = {

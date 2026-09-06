@@ -60,6 +60,9 @@ class VehicleServiceTest {
 	private VehicleRepository vehicleRepository;
 
 	@Mock
+	private RabbitmqSender rabbitmqSender;
+
+	@Mock
 	private VehicleDocumentRepository documentRepository;
 
 	@Mock
