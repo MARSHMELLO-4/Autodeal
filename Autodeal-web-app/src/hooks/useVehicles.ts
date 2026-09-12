@@ -1,23 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getVehicles } from "../api/api-client";
+import type { filterModel } from "../models/fIltersModels";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import {
+    vehiclesReceived,
+    vehiclesRequested,
+    vehiclesRequestFailed,
+} from "../store/vehiclesSlice";
 
-export function useVehicles(filters : any){
+export function useVehicles(filters : filterModel){
 
-    const [vehicles,setVehicles]=useState([]);
-    const [loading,setLoading]=useState(false);
-    const [error, setError] = useState<Error | null>(null);
+    const dispatch = useAppDispatch();
+    const vehicles = useAppSelector((state) => state.vehicles.items);
+    const loading = useAppSelector((state) => state.vehicles.loading);
+    const error = useAppSelector((state) => state.vehicles.error);
 
     useEffect(()=>{
 
-        setLoading(true);
-        setError(null);
+        dispatch(vehiclesRequested());
 
         getVehicles(filters)
-        .then(res=>setVehicles(res.content))
-        .catch(err => setError(err))
-        .finally(()=>setLoading(false));
+        .then(res=>dispatch(vehiclesReceived(res.content || [])))
+        .catch(err => dispatch(vehiclesRequestFailed(err.message || "Failed to fetch vehicles")));
 
-    },[filters]);
+    },[dispatch, filters]);
 
     return {vehicles,loading, error};
 
