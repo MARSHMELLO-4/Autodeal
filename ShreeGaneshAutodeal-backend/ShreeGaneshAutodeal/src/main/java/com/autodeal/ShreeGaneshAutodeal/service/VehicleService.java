@@ -18,6 +18,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.repository.*;
+import com.autodeal.ShreeGaneshAutodeal.service.RabitMQ.RabbitmqSender;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -101,8 +102,13 @@ public class VehicleService {
 		Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
 		boolean shouldGenerateAiDescription = (savedVehicle.getDescription() == null || savedVehicle.getDescription().isBlank());
-		sendPostCommitMessages(savedVehicle.getId(), shouldGenerateAiDescription);
+		sendPostCommit(() -> {
+			rabbitmqSender.sendVehicleCreated(savedVehicle.getId());
 
+			if(shouldGenerateAiDescription){
+				rabbitmqSender.sendGenerateDescription(savedVehicle.getId());
+			}
+		});
 		return toDetail(savedVehicle, true);
 	}
 
@@ -256,7 +262,12 @@ public class VehicleService {
 		saleRecord.setNotes(CategoryService.blankToNull(request.notes()));
 		vehicle.setStatus(VehicleStatus.SOLD);
 		vehicle.addSale(saleRecord);
-		return toSaleResponse(saleRecordRepository.save(saleRecord));
+		SaleRecord savedSaleRecord = saleRecordRepository.save(saleRecord);
+		//now here we will call the rabitMQ
+		sendPostCommit(() -> {
+			rabbitmqSender.sendVehicleSold(vehicleId);
+		});
+		return toSaleResponse(savedSaleRecord);
 	}
 
 	@Transactional(readOnly = true)
@@ -321,13 +332,7 @@ public class VehicleService {
 				: request.thumbnailUrl().trim());
 	}
 
-	private void sendPostCommitMessages(Long vehicleId, boolean shouldGenerateAiDescription) {
-		Runnable dispatch = () -> {
-			rabbitmqSender.sendVehicleCreated(vehicleId);
-			if (shouldGenerateAiDescription) {
-				rabbitmqSender.sendGenerateDescription(vehicleId);
-			}
-		};
+	private void sendPostCommit(Runnable dispatch) {
 
 		if (TransactionSynchronizationManager.isActualTransactionActive()) {
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

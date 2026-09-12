@@ -1,4 +1,4 @@
-package com.autodeal.ShreeGaneshAutodeal.service;
+package com.autodeal.ShreeGaneshAutodeal.service.RabitMQ;
 
 
 import com.autodeal.ShreeGaneshAutodeal.config.RabbitMQConfig;
@@ -24,6 +24,14 @@ public class RabbitmqSender {
     public void sendGenerateDescription(Long vehicleId) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.LLM_DESCRIPTION_QUEUE,
+                vehicleId
+        );
+    }
+
+
+    public void sendVehicleSold(Long vehicleId){
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.VEHICLE_SOLD,
                 vehicleId
         );
     }
