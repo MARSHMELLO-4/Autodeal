@@ -2,9 +2,9 @@
 
 Last updated: September 2026
 
-Shree Ganesh Autodeal is a full-stack two-wheeler dealership platform with a Flutter admin app, a React customer catalog, and a Spring Boot backend. The owner can manage inventory, images, vehicle documents, categories, and sales from the mobile app, while customers can browse available vehicles through the public web catalog and subscribe to email alerts for newly listed inventory.
+Shree Ganesh Autodeal is a full-stack two-wheeler dealership platform with a Flutter admin app, a React customer catalog, and a Spring Boot backend. The owner can manage inventory, images, vehicle documents, categories, and sales from the mobile app, while customers can browse available vehicles through the public web catalog, receive real-time inventory updates, and subscribe to email alerts for newly listed inventory.
 
-The backend includes Redis-backed caching for read-heavy catalog and reporting endpoints, RabbitMQ-backed asynchronous task processing for subscriber email notifications and Groq LLM vehicle description generation, transaction-safe event dispatching, targeted cache eviction on inventory mutations, and API-key based protection for admin APIs.
+The backend includes Redis-backed caching for read-heavy catalog and reporting endpoints, RabbitMQ-backed asynchronous task processing for subscriber email notifications, Groq LLM vehicle description generation, and real-time inventory events over STOMP WebSockets. It also includes transaction-safe event dispatching, targeted cache eviction on inventory mutations, and API-key based protection for admin APIs.
 
 ---
 
@@ -85,6 +85,8 @@ Autodeal/
 - Search vehicles
 - Filter by category and status
 - View vehicle images and detailed specifications
+- Receive real-time inventory updates when vehicles are created or marked sold
+- Store catalog inventory in Redux so list/grid UI updates automatically from shared state
 - Subscribe to vehicle availability email notifications with OTP verification
 - Responsive customer-facing layout
 - Access public catalog APIs without authentication
@@ -102,6 +104,13 @@ Autodeal/
 - **RabbitMQ Asynchronous Messaging**:
   - `vehicle_create` queue: Dispatches new vehicle alerts to all active subscribers via email in the background
   - `vehicle_llm_description` queue: Asynchronously generates rich sales copy via Groq LLM without blocking vehicle creation
+  - `vehicle_sold` queue: Publishes sold-vehicle inventory updates to connected web clients
+- **Real-Time Inventory Updates**:
+  - Spring STOMP endpoint exposed at `/ws`
+  - Inventory topic broadcast on `/topic/inventory`
+  - `VEHICLE_CREATED` events are emitted after vehicle creation and consumed by the React catalog
+  - `VEHICLE_SOLD` events are emitted after a vehicle is marked sold and remove the vehicle from the live catalog state
+  - React stores vehicle inventory in Redux, hydrates it from REST, then patches it from WebSocket events
 - **Transaction-Safe Post-Commit Dispatch**:
   - Leverages Spring `TransactionSynchronizationManager.afterCommit()` to ensure RabbitMQ messages are only dispatched *after* the database transaction has committed, eliminating race conditions
 - **Subscriber Onboarding with OTP Verification**:
@@ -123,7 +132,7 @@ Autodeal/
 
 | Layer | Current Stack |
 | --- | --- |
-| Backend | Java 21, Spring Boot 4.1.0, Spring MVC, Spring Data JPA, Hibernate, Maven |
+| Backend | Java 21, Spring Boot 4.1.0, Spring MVC, Spring WebSocket/STOMP, Spring Data JPA, Hibernate, Maven |
 | Messaging | RabbitMQ via Spring AMQP (`spring-boot-starter-amqp`) |
 | Email | Spring Mail (`spring-boot-starter-mail`) via Brevo / Gmail SMTP |
 | LLM | Groq API (`llama-3.3-70b-versatile` / configured model) |
@@ -132,7 +141,7 @@ Autodeal/
 | Cache | Redis through Spring Cache and Spring Data Redis |
 | Database | PostgreSQL-compatible schema, H2 for tests |
 | Storage | Supabase Storage |
-| Web | React 19, Vite 8, TypeScript 6, Tailwind CSS 4 |
+| Web | React 19, Vite 8, TypeScript 6, Tailwind CSS 4, Redux Toolkit, React Redux, STOMP client |
 | Web Testing | Vitest, React Testing Library, jsdom |
 | Mobile | Flutter, Dart, Provider, http, image_picker, file_picker |
 | CI/CD | GitHub Actions |
@@ -145,6 +154,7 @@ Autodeal/
                React Customer Web App                    Flutter Admin App
                         |                                       |
                         | Public GET / Subscriber POST          | X-ADMIN-KEY
+                        | STOMP subscribe /topic/inventory      |
                         v                                       v
                 Public / Subscriber APIs                   Admin APIs
                         \                                     /
@@ -168,11 +178,23 @@ Autodeal/
              |
              +---> Queue: "vehicle_create"
              |        |
-             |        v
-             |     RabbitmqReceiver.sendNotifications()
+             |        +---> RabbitmqReceiver.sendNotifications()
+             |        |        |
+             |        |        v
+             |        |     EmailService (SMTP / Brevo) -> Active Subscribers
+             |        |
+             |        `---> VehicleWebSocketService.publishVehicleAdded()
+             |                 |
+             |                 v
+             |              STOMP /topic/inventory -> VEHICLE_CREATED
+             |
+             +---> Queue: "vehicle_sold"
              |        |
              |        v
-             |     EmailService (SMTP / Brevo) -> Active Subscribers
+             |     VehicleWebSocketService.publishVehicleSold()
+             |        |
+             |        v
+             |     STOMP /topic/inventory -> VEHICLE_SOLD
              |
              +---> Queue: "vehicle_llm_description"
                       |
@@ -183,7 +205,43 @@ Autodeal/
                    LLMService (Groq API) -> Updates Vehicle Description in DB
 ```
 
-PostgreSQL remains the source of truth. Redis is used for catalog response caching and short-lived OTP tokens. RabbitMQ reliably offloads external network calls (email sending and Groq LLM completion) to asynchronous background threads.
+PostgreSQL remains the source of truth. Redis is used for catalog response caching and short-lived OTP tokens. RabbitMQ reliably offloads external network calls (email sending and Groq LLM completion) and fan-out inventory events to asynchronous background threads.
+
+### Real-Time Inventory Data Flow
+
+```text
+Initial catalog load:
+
+React App
+  -> GET /api/catalog/vehicles
+  -> Redux vehicles slice stores page.content
+  -> Vehicle grid renders from Redux selectors
+
+Vehicle created from Flutter admin app:
+
+Flutter Admin App
+  -> POST /api/admin/vehicles
+  -> VehicleService saves vehicle in PostgreSQL
+  -> afterCommit sends vehicle id to RabbitMQ vehicle_create queue
+  -> RabbitmqReceiver broadcasts VEHICLE_CREATED to /topic/inventory
+  -> React STOMP client receives event
+  -> React fetches /api/catalog/vehicles/{id}
+  -> Redux upserts the vehicle if it matches current filters
+  -> Vehicle grid updates without page refresh
+
+Vehicle marked sold from Flutter admin app:
+
+Flutter Admin App
+  -> POST /api/admin/vehicles/{id}/sales
+  -> VehicleService marks vehicle SOLD in PostgreSQL
+  -> afterCommit sends vehicle id to RabbitMQ vehicle_sold queue
+  -> RabbitmqReceiver broadcasts VEHICLE_SOLD to /topic/inventory
+  -> React STOMP client receives event
+  -> Redux removes the vehicle from the current catalog list
+  -> Vehicle grid updates without page refresh
+```
+
+The React frontend uses `@stomp/stompjs` to connect to the Spring WebSocket endpoint. `useVehicles()` performs the initial REST fetch and stores vehicles in Redux. `useInventoryWebSocket()` listens for `/topic/inventory` events and dispatches Redux actions such as `vehicleUpserted` and `vehicleRemoved`, so components that read from the vehicle slice update automatically.
 
 ---
 
@@ -467,6 +525,8 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_TIMEOUT=2s
 
+RABBITMQ_URL=
+
 ADMIN_API_KEY=
 ```
 
@@ -491,7 +551,7 @@ admin.api-key=test-admin-key
 spring.cache.type=none
 ```
 
-Note: the backend defaults to `PORT=8080`, while the web app currently defaults to `http://localhost:9090` if `VITE_API_BASE_URL` is not set. Keep them aligned by either setting `PORT=9090` for local backend runs or setting `VITE_API_BASE_URL=http://localhost:8080`.
+Note: the backend and web app both default to `http://localhost:8080` for API/WebSocket access. If the backend runs on another port, set `VITE_API_BASE_URL` in the React app so both REST calls and the STOMP WebSocket URL point to the same backend.
 
 ---
 
@@ -633,6 +693,21 @@ npm run dev
 
 The React application uses the public catalog APIs and does not need the admin API key.
 
+For local development, the React app defaults to:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+The frontend derives the STOMP WebSocket URL from the same value:
+
+```text
+http://localhost:8080 -> ws://localhost:8080/ws
+https://api.example.com -> wss://api.example.com/ws
+```
+
+When a customer has the catalog open, the browser subscribes to `/topic/inventory` and updates the Redux vehicle state when `VEHICLE_CREATED` or `VEHICLE_SOLD` events arrive.
+
 ### Flutter Mobile App
 
 ```bash
@@ -687,9 +762,9 @@ The frontend tests cover React component rendering, user interactions, API clien
 | `VehicleDetails.test.tsx` | Vehicle detail rendering and user interactions | Vitest, React Testing Library |
 | `api-client.test.ts` | API client requests, responses and error handling | Vitest |
 | `CategoryServiceTest` | Category CRUD, slug generation, name/slug uniqueness, string normalization | JUnit 5, Mockito |
-| `VehicleServiceTest` | Vehicle lifecycle, async RabbitMQ message queueing, post-commit dispatch, image/document management | JUnit 5, Mockito |
-| `RabbitmqSenderTest` | Asynchronous message dispatching to `vehicle_create` and `vehicle_llm_description` queues | JUnit 5, Mockito |
-| `RabbitmqReceiverTest` | Queue listener delegation to notification and vehicle services with error isolation | JUnit 5, Mockito |
+| `VehicleServiceTest` | Vehicle lifecycle, async RabbitMQ message queueing, post-commit dispatch, image/document management, mark-sold flow | JUnit 5, Mockito |
+| `RabbitmqSenderTest` | Asynchronous message dispatching to `vehicle_create`, `vehicle_sold`, and `vehicle_llm_description` queues | JUnit 5, Mockito |
+| `RabbitmqReceiverTest` | Queue listener delegation to notification, vehicle, and WebSocket services with error isolation | JUnit 5, Mockito |
 | `NotificationServiceTest` | Active subscriber querying, parameter mapping, and notification dispatch | JUnit 5, Mockito |
 | `LLMServiceTest` | Automotive sales prompt generation from Vehicle entity and VehicleRequest DTO | JUnit 5 |
 | `EmailServiceTest` | SimpleMailMessage OTP delivery and MimeMessage vehicle alert HTML rendering | JUnit 5, Mockito |
