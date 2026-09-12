@@ -30,6 +30,7 @@ public class RabbitmqReceiver {
     public void sendNotifications(Long vehicleId) {
         try {
             notificationService.notifySubscribers(vehicleId);
+            vehicleWebSocketService.publishVehicleAdded(vehicleId);
         } catch (Exception e) {
             log.error("Failed to send vehicle notification for vehicle id: {}", vehicleId, e);
         }

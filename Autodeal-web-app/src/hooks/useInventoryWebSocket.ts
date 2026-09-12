@@ -7,7 +7,8 @@ import { useAppDispatch } from "../store/hooks";
 import { vehicleRemoved, vehicleUpserted } from "../store/vehiclesSlice";
 import { vehicleMatchesFilters } from "../utils/vehicleFilters";
 
-export function useInventoryWebSocket(filters: filterModel) {
+export function useInventoryWebSocket(filters: filterModel, 
+  setShowVehicleAddedAlert : React.Dispatch<React.SetStateAction<boolean>>) {
   const dispatch = useAppDispatch();
   const filtersRef = useRef(filters);
 
@@ -20,6 +21,11 @@ export function useInventoryWebSocket(filters: filterModel) {
       if (event.type === "VEHICLE_SOLD") {
         dispatch(vehicleRemoved(event.id));
         return;
+      }
+
+      //if the event type if the vehicle added then we have to show the alert 
+      if(event.type === "VEHICLE_CREATED"){
+        setShowVehicleAddedAlert(true);
       }
 
       getVehicle(String(event.id))

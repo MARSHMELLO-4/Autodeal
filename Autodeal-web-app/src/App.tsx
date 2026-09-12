@@ -16,6 +16,8 @@ import type { SingleVehicleModel } from "./models/singleVehicleModel";
 import SubscribeForm from "./layout/SubscribeForm";
 import { useVehicles } from "./hooks/useVehicles";
 import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
+import Alert from "@mui/material/Alert";
+import { Button } from "@mui/material";
 
 function App() {
   const [categories, setCategories] = useState<categoryModel[]>([]);
@@ -23,6 +25,7 @@ function App() {
     useState<SingleVehicleModel | null>(null);
 
   const [showSubscribe, setShowSubscribe] = useState(false);
+  const [showVehicleAddedAlert, setShowVehicleAddedAlert] = useState(false);
 
   const [filters, setFilters] = useState<filterModel>({
     search: "",
@@ -32,13 +35,9 @@ function App() {
 
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
-  const {
-    vehicles,
-    loading,
-    error: vehicleError,
-  } = useVehicles(filters);
+  const { vehicles, loading, error: vehicleError } = useVehicles(filters);
 
-  useInventoryWebSocket(filters);
+  useInventoryWebSocket(filters, setShowVehicleAddedAlert);
 
   /* -----------------------------------------------------------
      LOAD CATEGORIES
@@ -72,6 +71,19 @@ function App() {
       .finally(() => setDetailLoading(false));
   }
 
+  //automatically hiding the notification of the vehicle added 
+  useEffect(() => {
+    if(!showVehicleAddedAlert) return; 
+
+    //else for the timer of the 3 seconds 
+    const timer = setTimeout(() => {
+      setShowVehicleAddedAlert(false)
+    }, 3000);
+
+    return () => clearTimeout(timer);
+
+  }, [showVehicleAddedAlert])
+
   return (
     <main className="min-h-screen bg-[var(--paper)]">
       {showSubscribe && (
@@ -90,6 +102,18 @@ function App() {
             Subscribe
           </button>
         </div>
+      </div>
+
+      <div>
+        {showVehicleAddedAlert && (
+          <Alert
+            severity="success"
+            onClose={() => setShowVehicleAddedAlert(false)}
+            className="fixed right-6 top-24 z-[9999] w-fit shadow-lg"
+          >
+            A new vehicle has been added to the inventory!
+          </Alert>
+        )}
       </div>
 
       <section id="inventory" className="mx-auto max-w-7xl px-6 py-8 md:py-10">

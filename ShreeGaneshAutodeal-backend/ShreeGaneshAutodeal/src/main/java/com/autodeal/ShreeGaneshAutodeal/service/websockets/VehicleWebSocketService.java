@@ -15,7 +15,6 @@ public class VehicleWebSocketService {
     }
 
     public void publishVehicleSold(Long vehicleId){
-
         WebSocketVehicleEvent event =
                 new WebSocketVehicleEvent(
                         "VEHICLE_SOLD",
@@ -27,8 +26,20 @@ public class VehicleWebSocketService {
                 "/topic/inventory",
                 event
         );
+    }
 
+    public void publishVehicleAdded(Long vehicleId){
+        WebSocketVehicleEvent event =
+                new WebSocketVehicleEvent(
+                        "VEHICLE_CREATED",
+                        vehicleId
+                );
 
+        //publish the message
+        messagingTemplate.convertAndSend(
+                "/topic/inventory",
+                event
+        );
     }
 
 
