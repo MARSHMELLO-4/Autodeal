@@ -17,7 +17,6 @@ import SubscribeForm from "./layout/SubscribeForm";
 import { useVehicles } from "./hooks/useVehicles";
 import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
 import Alert from "@mui/material/Alert";
-import { Button } from "@mui/material";
 
 function App() {
   const [categories, setCategories] = useState<categoryModel[]>([]);
