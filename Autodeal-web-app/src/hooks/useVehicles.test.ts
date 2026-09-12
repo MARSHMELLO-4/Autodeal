@@ -1,11 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { createElement, type PropsWithChildren } from "react";
 import { useVehicles } from "./useVehicles";
 import * as apiClient from "../api/api-client";
+import { store } from "../store/store";
+import { vehiclesReceived } from "../store/vehiclesSlice";
+import type { filterModel } from "../models/fIltersModels";
+
+function wrapper({ children }: PropsWithChildren) {
+  return createElement(Provider, { store, children });
+}
 
 describe("useVehicles hook", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    store.dispatch(vehiclesReceived([]));
   });
 
   it("should fetch vehicles and manage loading state", async () => {
@@ -18,9 +28,8 @@ describe("useVehicles hook", () => {
       content: mockVehicles,
     } as any);
 
-    const { result } = renderHook(() =>
-      useVehicles({ search: "", category: "", status: "AVAILABLE" })
-    );
+    const filters: filterModel = { search: "", category: "", status: "AVAILABLE" };
+    const { result } = renderHook(() => useVehicles(filters), { wrapper });
 
     expect(result.current.loading).toBe(true);
 
@@ -52,8 +61,9 @@ describe("useVehicles hook", () => {
       ({ filters }) => useVehicles(filters),
       {
         initialProps: {
-          filters: { search: "", category: "", status: "AVAILABLE" },
+          filters: { search: "", category: "", status: "AVAILABLE" as const },
         },
+        wrapper,
       }
     );
 
@@ -69,7 +79,7 @@ describe("useVehicles hook", () => {
 
     // Change filters
     rerender({
-      filters: { search: "", category: "scooters", status: "AVAILABLE" },
+      filters: { search: "", category: "scooters", status: "AVAILABLE" as const },
     });
 
     await waitFor(() => {
@@ -89,9 +99,12 @@ describe("useVehicles hook", () => {
       content: [],
     } as any);
 
-    const { result } = renderHook(() =>
-      useVehicles({ search: "nonexistent", category: "", status: "AVAILABLE" })
-    );
+    const filters: filterModel = {
+      search: "nonexistent",
+      category: "",
+      status: "AVAILABLE",
+    };
+    const { result } = renderHook(() => useVehicles(filters), { wrapper });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -105,9 +118,8 @@ describe("useVehicles hook", () => {
       new Error("Failed to fetch vehicles")
     );
 
-    const { result } = renderHook(() =>
-      useVehicles({ search: "", category: "", status: "AVAILABLE" })
-    );
+    const filters: filterModel = { search: "", category: "", status: "AVAILABLE" };
+    const { result } = renderHook(() => useVehicles(filters), { wrapper });
 
     expect(result.current.loading).toBe(true);
 
@@ -118,8 +130,7 @@ describe("useVehicles hook", () => {
     // Vehicles should remain empty array on error
     expect(result.current.vehicles).toEqual([]);
     // Error should be set
-    expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toBe("Failed to fetch vehicles");
+    expect(result.current.error).toBe("Failed to fetch vehicles");
   });
 
   it("should apply search filter correctly", async () => {
@@ -131,9 +142,12 @@ describe("useVehicles hook", () => {
       content: mockVehicles,
     } as any);
 
-    renderHook(() =>
-      useVehicles({ search: "Activa", category: "", status: "AVAILABLE" })
-    );
+    const filters: filterModel = {
+      search: "Activa",
+      category: "",
+      status: "AVAILABLE",
+    };
+    renderHook(() => useVehicles(filters), { wrapper });
 
     await waitFor(() => {
       expect(getVehiclesSpy).toHaveBeenCalledWith({
@@ -153,9 +167,12 @@ describe("useVehicles hook", () => {
       content: mockVehicles,
     } as any);
 
-    renderHook(() =>
-      useVehicles({ search: "", category: "scooters", status: "AVAILABLE" })
-    );
+    const filters: filterModel = {
+      search: "",
+      category: "scooters",
+      status: "AVAILABLE",
+    };
+    renderHook(() => useVehicles(filters), { wrapper });
 
     await waitFor(() => {
       expect(getVehiclesSpy).toHaveBeenCalledWith({

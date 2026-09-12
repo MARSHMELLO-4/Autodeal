@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { Bike } from "lucide-react";
 
-import { getCategories, getVehicle, getVehicles } from "./api/api-client";
+import { getCategories, getVehicle } from "./api/api-client";
 
 import Header from "./layout/Header";
 import FilterPanel from "./filters/FilterPanel";
@@ -12,13 +12,13 @@ import WhyUs from "./layout/Footer";
 
 import type { categoryModel } from "./models/categoryModel";
 import type { filterModel } from "./models/fIltersModels";
-import type { VehicleModel } from "./models/vehicleModel";
 import type { SingleVehicleModel } from "./models/singleVehicleModel";
 import SubscribeForm from "./layout/SubscribeForm";
+import { useVehicles } from "./hooks/useVehicles";
+import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
 
 function App() {
   const [categories, setCategories] = useState<categoryModel[]>([]);
-  const [vehicles, setVehicles] = useState<VehicleModel[]>([]);
   const [selectedVehicle, setSelectedVehicle] =
     useState<SingleVehicleModel | null>(null);
 
@@ -30,9 +30,15 @@ function App() {
     status: "AVAILABLE",
   });
 
-  const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
+  const {
+    vehicles,
+    loading,
+    error: vehicleError,
+  } = useVehicles(filters);
+
+  useInventoryWebSocket(filters);
 
   /* -----------------------------------------------------------
      LOAD CATEGORIES
@@ -43,22 +49,6 @@ function App() {
       .then(setCategories)
       .catch((err) => setError(err.message));
   }, []);
-
-  /* -----------------------------------------------------------
-     LOAD VEHICLES
-  ----------------------------------------------------------- */
-
-  useEffect(() => {
-    setLoading(true);
-
-    getVehicles(filters)
-      .then((page) => {
-        setVehicles(page.content || []);
-        setError("");
-      })
-      .catch((err: any) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [filters]);
 
   /* -----------------------------------------------------------
      ACTIVE CATEGORY
@@ -84,16 +74,17 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[var(--paper)]">
-      {showSubscribe && <SubscribeForm onClose={() => setShowSubscribe(false)} />}
+      {showSubscribe && (
+        <SubscribeForm onClose={() => setShowSubscribe(false)} />
+      )}
       <div className="sticky top-0 z-50 border-b border-black/5 bg-white relative">
         <Header />
 
         <div className="absolute right-6 top-1/2 z-[100] flex -translate-y-1/2 items-center gap-3">
           <button
             className="rounded-xl border-2 border-[var(--maroon)] bg-[var(--maroon)] px-4 py-2 text-sm font-bold text-white transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
-
-            onClick = {() => {
-              setShowSubscribe(true)
+            onClick={() => {
+              setShowSubscribe(true);
             }}
           >
             Subscribe
@@ -136,9 +127,9 @@ function App() {
           />
         </div>
 
-        {error && (
+        {(error || vehicleError) && (
           <div className="mb-8 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
-            {error}
+            {error || vehicleError}
           </div>
         )}
 
