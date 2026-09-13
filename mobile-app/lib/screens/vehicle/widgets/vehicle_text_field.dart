@@ -8,6 +8,7 @@ class VehicleTextField extends StatelessWidget {
     this.maxLines = 1,
     this.hint,
     super.key,
+    this.capsOnWords = false,
   });
 
   final TextEditingController controller;
@@ -15,12 +16,14 @@ class VehicleTextField extends StatelessWidget {
   final bool required;
   final int maxLines;
   final String? hint;
+  final bool capsOnWords;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
+        textCapitalization: capsOnWords ? TextCapitalization.characters : TextCapitalization.none,
         controller: controller,
         maxLines: maxLines,
         decoration: InputDecoration(

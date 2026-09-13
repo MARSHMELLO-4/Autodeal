@@ -61,6 +61,7 @@ class VehicleSpecificationsStep extends StatelessWidget {
               child: VehicleTextField(
                 controller: form.color,
                 label: 'Color',
+                capsOnWords: true,
               ),
             ),
           ],
@@ -100,6 +101,7 @@ class VehicleSpecificationsStep extends StatelessWidget {
         VehicleTextField(
           controller: form.location,
           label: 'Location',
+          capsOnWords: true,
         ),
       ],
     );

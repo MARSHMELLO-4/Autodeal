@@ -125,11 +125,7 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
         {/* Mobile Slide-down Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="border-t border-slate-100 bg-white px-4 py-4 shadow-xl lg:hidden animate-[fadeIn_.2s_ease]">
-            {/* Mobile Language Switcher Row */}
-            <div className="mb-3 flex items-center justify-between pb-3 border-b border-slate-100">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">भाषा / Language</span>
-              <LanguageToggle />
-            </div>
+
 
             <nav className="flex flex-col gap-1 pb-4">
               {navItems.map((item) => (

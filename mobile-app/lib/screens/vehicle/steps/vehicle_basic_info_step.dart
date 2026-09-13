@@ -42,7 +42,7 @@ class VehicleBasicInfoStep extends StatelessWidget {
           onCreateCategory: onCreateCategory,
         ),
 
-        const SizedBox(height: 2),
+        const SizedBox(height: 24),
 
         Row(
           children: [
@@ -51,6 +51,7 @@ class VehicleBasicInfoStep extends StatelessWidget {
                 controller: form.brand,
                 label: 'Brand',
                 required: true,
+                capsOnWords: true,
               ),
             ),
             const SizedBox(width: 12),
@@ -59,6 +60,7 @@ class VehicleBasicInfoStep extends StatelessWidget {
                 controller: form.modelName,
                 label: 'Model',
                 required: true,
+                capsOnWords: true,
               ),
             ),
           ],
@@ -72,6 +74,7 @@ class VehicleBasicInfoStep extends StatelessWidget {
         VehicleTextField(
           controller: form.registrationNumber,
           label: 'Registration Number',
+          capsOnWords: true,
         ),
 
         Row(

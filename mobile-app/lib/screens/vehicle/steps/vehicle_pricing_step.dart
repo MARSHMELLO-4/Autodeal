@@ -40,6 +40,7 @@ class VehiclePricingStep extends StatelessWidget {
           controller: form.price,
           label: 'Selling Price',
           required: true,
+          prefixText: '₹ ',
         ),
 
         VehicleTextField(

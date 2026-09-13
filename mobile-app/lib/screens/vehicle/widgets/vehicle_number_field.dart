@@ -6,11 +6,13 @@ class VehicleNumberField extends StatelessWidget {
     required this.label,
     this.required = false,
     super.key,
+    this.prefixText = '',
   });
 
   final TextEditingController controller;
   final String label;
   final bool required;
+  final String prefixText;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +24,7 @@ class VehicleNumberField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          prefixText: prefixText,
         ),
         validator: (value) {
           if (required &&
