@@ -47,20 +47,26 @@ const VehicleDrawer = ({
           bg-[var(--paper)]
           shadow-2xl
           animate-[fadeIn_.25s_ease]
-          md:h-[92vh]
-          md:max-w-6xl
+          md:h-[90vh]
+          md:max-w-5xl
           md:rounded-3xl
+          flex
+          flex-col
         "
       >
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-white/90 px-6 py-4 backdrop-blur-lg">
+        {/* Mobile Drag Indicator Bar */}
+        <div className="flex justify-center pt-2.5 pb-1 bg-white md:hidden">
+          <div className="h-1.5 w-10 rounded-full bg-slate-300" />
+        </div>
 
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 py-3 sm:px-6 sm:py-3.5 backdrop-blur-lg">
           <div>
-            <h2 className="text-lg font-bold text-[var(--ink)]">
+            <h2 className="text-base sm:text-lg font-bold text-[var(--ink)]">
               Vehicle Details
             </h2>
 
-            <p className="text-sm text-[var(--moss)]">
+            <p className="text-xs text-slate-500">
               Verified Pre-Owned Motorcycle
             </p>
           </div>
@@ -69,20 +75,24 @@ const VehicleDrawer = ({
             onClick={() => setSelectedVehicle(null)}
             className="
               flex
-              h-11
-              w-11
+              h-9
+              w-9
+              sm:h-10
+              sm:w-10
               items-center
               justify-center
               rounded-full
               bg-slate-100
+              text-slate-600
               transition-all
-              duration-300
-              hover:rotate-90
               hover:bg-red-50
               hover:text-red-600
+              active:scale-95
+              cursor-pointer
             "
+            aria-label="Close drawer"
           >
-            <X size={22} />
+            <X size={20} />
           </button>
         </div>
 

@@ -160,80 +160,150 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
     trackMouse: true,
   });
 
+  const whatsappUrl = `https://wa.me/918982883521?text=${encodeURIComponent(
+    `Hi, I'm interested in the ${vehicle.title} (${vehicle.manufactureYear}) listed for ${formatPrice(
+      vehicle.price
+    )} on Shree Ganesh Autodeal. Is it still available?`
+  )}`;
+
   return (
     <>
-      <div className="space-y-7">
-
+      <div className="space-y-6 pb-2">
         {/* =====================================================
-            MAIN IMAGE
+            MAIN IMAGE CONTAINER
         ===================================================== */}
+        <div {...handlers} className="relative overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80 shadow-xs">
+          <button
+            type="button"
+            onClick={() => openLightbox()}
+            className="group relative flex aspect-[4/3] sm:aspect-[16/9] w-full cursor-zoom-in items-center justify-center overflow-hidden bg-slate-100"
+          >
+            <img
+              src={gallery[currentImage]?.imageUrl}
+              alt={gallery[currentImage]?.altText || vehicle.title}
+              className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.02]"
+            />
 
-        <div {...handlers} className="relative overflow-hidden rounded-2xl bg-slate-100" > <button type="button" onClick={() => openLightbox()} className="group relative flex aspect-[16/9] w-full cursor-zoom-in items-center justify-center overflow-hidden bg-slate-100 md:aspect-[16/8]" > <img src={gallery[currentImage]?.imageUrl} alt={gallery[currentImage]?.altText} className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.02]" /> {/* Subtle background behind image */} <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-white to-slate-200" /> {/* Bottom gradient */} <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent" /> {/* Click to zoom */} <div className="absolute bottom-4 right-4 rounded-full bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur"> Click to enlarge </div> </button> {/* Status */} <div className="absolute left-4 top-4 flex flex-wrap gap-2"> <span className="rounded-full bg-emerald-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm"> {vehicle.status} </span> <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-semibold text-[var(--ink)] shadow-sm backdrop-blur"> <ShieldCheck size={13} /> Verified </span> </div> {/* Navigation */} {gallery.length > 1 && ( <> <button type="button" onClick={previousImage} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white" > <ChevronLeft size={18} /> </button> <button type="button" onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white" > <ChevronRight size={18} /> </button> </> )} {/* Price */} <div className="absolute bottom-4 left-4"> <p className="text-[10px] font-medium uppercase tracking-widest text-white/70"> Price </p> <p className="text-2xl font-black text-white md:text-3xl"> {formatPrice(vehicle.price)} </p> </div> </div>  
+            {/* Bottom Gradient for Contrast */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
+            {/* Click to Enlarge Badge */}
+            <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-xs">
+              Tap to enlarge
+            </div>
+          </button>
 
-        {/* =====================================================
-            THUMBNAILS
-        ===================================================== */}
-
-        {gallery.length > 1 && (
-
-          <div className="flex gap-2 overflow-x-auto pb-1">
-
-            {gallery.map((image, index) => (
-
-              <button
-                key={index}
-                type="button"
-                onClick={() => openLightbox(index)}
-                className={`h-16 min-w-[76px] overflow-hidden rounded-xl border-2 transition ${
-                  currentImage === index
-                    ? "border-[var(--maroon)]"
-                    : "border-transparent opacity-70 hover:opacity-100"
-                }`}
-              >
-
-                <img
-                  src={image.imageUrl}
-                  alt={image.altText}
-                  className="h-full w-full object-cover"
-                />
-
-              </button>
-
-            ))}
-
+          {/* Status & Verified Badges */}
+          <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-xs">
+              {vehicle.status}
+            </span>
+            <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-slate-700 shadow-xs backdrop-blur-xs">
+              <ShieldCheck size={12} className="text-emerald-600" />
+              Verified
+            </span>
           </div>
 
+          {/* Previous / Next Arrows */}
+          {gallery.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={previousImage}
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-700 shadow-sm backdrop-blur-xs transition hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={nextImage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-slate-700 shadow-sm backdrop-blur-xs transition hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Next image"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
+
+          {/* Price Overlay */}
+          <div className="absolute bottom-3 left-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">
+              Listed Price
+            </p>
+            <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-xs">
+              {formatPrice(vehicle.price)}
+            </p>
+          </div>
+        </div>
+
+        {/* Gallery Mobile Dots & Thumbnails */}
+        {gallery.length > 1 && (
+          <div className="space-y-2">
+            {/* Dots */}
+            <div className="flex justify-center gap-1.5 sm:hidden">
+              {gallery.map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-1.5 rounded-full transition-all ${
+                    currentImage === index ? "w-5 bg-[var(--maroon)]" : "w-1.5 bg-slate-300"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Thumbnail Row */}
+            <div className="no-scrollbar flex gap-2 overflow-x-auto py-1">
+              {gallery.map((image, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => openLightbox(index)}
+                  className={`h-14 w-18 shrink-0 overflow-hidden rounded-xl border-2 transition-all cursor-pointer ${
+                    currentImage === index
+                      ? "border-[var(--maroon)] ring-2 ring-red-100"
+                      : "border-slate-200 opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <img
+                    src={image.imageUrl}
+                    alt={image.altText || `Thumbnail ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-
         {/* =====================================================
-            TITLE
+            TITLE & BASIC INFO
         ===================================================== */}
-
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="rounded-md bg-red-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[var(--maroon)]">
+              {vehicle.category.name}
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {vehicle.location}
+            </span>
+          </div>
 
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--maroon)]">
-            {vehicle.category.name}
-          </p>
-
-          <h1 className="text-3xl font-black tracking-tight text-[var(--ink)] md:text-4xl">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
             {vehicle.title}
           </h1>
 
-          <p className="mt-1 text-sm text-[var(--moss)]">
+          <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
             {vehicle.brand} • {vehicle.modelName}
           </p>
-
         </div>
 
-
         {/* =====================================================
-            HIGHLIGHTS
+            KEY HIGHLIGHTS GRID (2 cols on mobile, 4 on desktop)
         ===================================================== */}
-
-        <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-black/5 bg-white md:grid-cols-4">
-
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <InfoCard
             icon={<Gauge size={18} />}
             label="Kilometers"
@@ -254,43 +324,34 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
           <InfoCard
             icon={<User size={18} />}
-            label="Owner"
+            label="Ownership"
             value={`${vehicle.ownerSerial} Owner`}
           />
-
         </div>
-
 
         {/* =====================================================
             DESCRIPTION
         ===================================================== */}
-
-        <section>
-
-          <h3 className="mb-2 text-lg font-bold text-[var(--ink)]">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
             About this motorcycle
           </h3>
 
-          <p className="text-sm leading-7 text-[var(--moss)]">
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
             {vehicle.description ||
-              "Every motorcycle at Shree Ganesh Autodeal goes through a complete inspection before being listed for sale. Contact us for a test ride or more information."}
+              "Every motorcycle at Shree Ganesh Autodeal goes through a thorough mechanical inspection before being listed for sale. Contact us for a test ride or RC documentation details."}
           </p>
-
         </section>
 
-
         {/* =====================================================
-            SPECIFICATIONS
+            SPECIFICATIONS TABLE
         ===================================================== */}
-
         <section>
-
-          <h3 className="mb-3 text-lg font-bold text-[var(--ink)]">
-            Details
+          <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
+            Specifications & Details
           </h3>
 
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white">
-
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
             <SpecRow
               icon={<Tag size={16} />}
               label="Brand"
@@ -316,40 +377,41 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             />
 
             <SpecRow
+              icon={<Calendar size={16} />}
+              label="Manufacture Year"
+              value={vehicle.manufactureYear}
+            />
+
+            <SpecRow
               icon={<MapPin size={16} />}
               label="Location"
               value={vehicle.location}
             />
-
           </div>
-
         </section>
 
-
         {/* =====================================================
-            CTA
+            STICKY BOTTOM CONTACT ACTIONS
         ===================================================== */}
-
-        <div className="sticky bottom-0 z-10 grid grid-cols-2 gap-2 border-t border-black/5 bg-white/95 py-3 backdrop-blur">
-
+        <div className="sticky bottom-0 z-20 grid grid-cols-2 gap-2.5 border-t border-slate-200 bg-white/95 py-3 backdrop-blur-md">
           <a
             href="tel:+918982883521"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] py-3 text-sm font-bold text-white transition hover:bg-[var(--maroon-dark)]"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] py-3 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer"
           >
-            <Phone size={17} />
-            Call Dealer
+            <Phone size={16} />
+            <span>Call Dealer</span>
           </a>
 
           <a
-            href="https://wa.me/918982883521"
-            className="flex items-center justify-center gap-2 rounded-xl border border-green-500 py-3 text-sm font-bold text-green-600 transition hover:bg-green-50"
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50 py-3 text-xs sm:text-sm font-bold text-emerald-700 shadow-xs transition hover:bg-emerald-100 active:scale-95 cursor-pointer"
           >
-            <MessageCircle size={17} />
-            WhatsApp
+            <MessageCircle size={16} className="text-emerald-600" />
+            <span>WhatsApp</span>
           </a>
-
         </div>
-
       </div>
 
 
