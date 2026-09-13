@@ -8,6 +8,8 @@ import {
   Bell,
   MapPin,
 } from "lucide-react";
+import LanguageToggle from "./LanguageToggle";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface HeaderProps {
   onOpenSubscribe?: () => void;
@@ -15,17 +17,18 @@ interface HeaderProps {
 
 const Header = ({ onOpenSubscribe }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navItems = [
-    { label: "Inventory", href: "#inventory" },
-    { label: "Categories", href: "#categories" },
-    { label: "Why Us", href: "#why-us" },
-    { label: "Contact", href: "#contact" },
+    { label: t("inventory"), href: "#inventory" },
+    { label: t("categories"), href: "#categories" },
+    { label: t("whyUs"), href: "#why-us" },
+    { label: t("contact"), href: "#contact" },
   ];
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md transition-all">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md transition-all">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 py-3 sm:px-6 sm:py-3.5">
           {/* Brand Logo & Name */}
           <a
@@ -50,16 +53,16 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
 
               <div className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700">
                 <ShieldCheck size={13} className="text-emerald-600 shrink-0" />
-                <span>Verified Pre-Owned Bikes</span>
+                <span>{t("verifiedTagline")}</span>
               </div>
             </div>
           </a>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-8 lg:flex">
+          <nav className="hidden items-center gap-7 lg:flex">
             {navItems.map((item) => (
               <a
-                key={item.label}
+                key={item.href}
                 href={item.href}
                 className="text-sm font-semibold text-slate-700 transition-colors hover:text-[var(--maroon)]"
               >
@@ -70,6 +73,9 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
 
           {/* Desktop & Tablet Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Switcher */}
+            <LanguageToggle className="hidden sm:inline-flex" />
+
             {/* Subscribe / Alerts Button */}
             {onOpenSubscribe && (
               <button
@@ -78,8 +84,8 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
                 className="flex items-center gap-1.5 rounded-full border border-red-100 bg-red-50/80 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-[var(--maroon)] transition-all hover:bg-red-100/80 hover:shadow-sm active:scale-95 cursor-pointer"
               >
                 <Bell size={14} className="text-[var(--maroon)]" />
-                <span className="hidden xs:inline">Get Alerts</span>
-                <span className="xs:hidden">Alerts</span>
+                <span className="hidden xs:inline">{t("getAlerts")}</span>
+                <span className="xs:hidden">{t("alerts")}</span>
               </button>
             )}
 
@@ -92,7 +98,7 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
                 className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-emerald-500 hover:text-emerald-700 hover:shadow"
               >
                 <MessageCircle size={15} className="text-emerald-600" />
-                <span>WhatsApp</span>
+                <span>{t("whatsApp")}</span>
               </a>
 
               <a
@@ -100,7 +106,7 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
                 className="flex items-center gap-1.5 rounded-full bg-[var(--maroon)] px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[var(--maroon-dark)] hover:shadow active:scale-95"
               >
                 <Phone size={14} />
-                <span>Call Dealer</span>
+                <span>{t("callDealer")}</span>
               </a>
             </div>
 
@@ -119,10 +125,16 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
         {/* Mobile Slide-down Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="border-t border-slate-100 bg-white px-4 py-4 shadow-xl lg:hidden animate-[fadeIn_.2s_ease]">
+            {/* Mobile Language Switcher Row */}
+            <div className="mb-3 flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">भाषा / Language</span>
+              <LanguageToggle />
+            </div>
+
             <nav className="flex flex-col gap-1 pb-4">
               {navItems.map((item) => (
                 <a
-                  key={item.label}
+                  key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 active:bg-slate-100"
@@ -138,7 +150,7 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
                 className="flex items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] py-2.5 text-xs font-bold text-white shadow-sm"
               >
                 <Phone size={15} />
-                Call Dealer
+                {t("callDealer")}
               </a>
 
               <a
@@ -148,13 +160,13 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
                 className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50/50 py-2.5 text-xs font-bold text-emerald-700"
               >
                 <MessageCircle size={15} className="text-emerald-600" />
-                WhatsApp
+                {t("whatsApp")}
               </a>
             </div>
 
             <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
               <MapPin size={12} className="text-[var(--maroon)]" />
-              <span>Indore, Madhya Pradesh • Open All Days</span>
+              <span>{t("showroomLocationInfo")}</span>
             </div>
           </div>
         )}

@@ -1,6 +1,9 @@
 import { ShieldCheck, FileCheck, IndianRupee, Sparkles, MessageCircle, Phone } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const HeroBanner = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-red-50/40 via-white to-transparent pb-4 pt-4 sm:pb-8 sm:pt-6">
       <div className="mx-auto max-w-7xl px-3.5 sm:px-6">
@@ -15,16 +18,16 @@ const HeroBanner = () => {
               {/* Trust Tag */}
               <div className="inline-flex items-center gap-1.5 rounded-full border border-red-200/70 bg-white/90 px-3 py-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[var(--maroon)] shadow-xs">
                 <Sparkles size={12} className="text-amber-500" />
-                <span>Indore's Trusted Two-Wheeler Hub</span>
+                <span>{t("heroHubTag")}</span>
               </div>
 
               <h1 className="mt-2 text-2xl font-black tracking-tight text-[var(--ink)] sm:text-4xl lg:text-5xl leading-[1.15]">
-                Ride Your Dream Bike <br className="hidden sm:inline" />
-                <span className="text-[var(--maroon)]">With Total Peace of Mind</span>
+                {t("heroTitle1")} <br className="hidden sm:inline" />
+                <span className="text-[var(--maroon)]">{t("heroTitle2")}</span>
               </h1>
 
               <p className="mt-2 text-xs sm:text-base text-slate-600 leading-relaxed font-medium">
-                Every pre-owned motorcycle is mechanically inspected, RC-verified, and priced transparently.
+                {t("heroSubtitle")}
               </p>
             </div>
 
@@ -37,7 +40,7 @@ const HeroBanner = () => {
                 className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-700 shadow-xs transition-all hover:bg-emerald-50 active:scale-95"
               >
                 <MessageCircle size={16} className="text-emerald-600 shrink-0" />
-                <span>Chat on WhatsApp</span>
+                <span>{t("chatWhatsApp")}</span>
               </a>
 
               <a
@@ -45,7 +48,7 @@ const HeroBanner = () => {
                 className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--maroon-dark)] active:scale-95"
               >
                 <Phone size={15} className="shrink-0" />
-                <span>Call Dealer</span>
+                <span>{t("callDealer")}</span>
               </a>
             </div>
           </div>
@@ -57,8 +60,8 @@ const HeroBanner = () => {
                 <ShieldCheck size={16} />
               </div>
               <div>
-                <p className="text-[11px] sm:text-xs font-bold text-slate-800">100% Inspected</p>
-                <p className="hidden text-[10px] text-slate-500 sm:block">Full mechanical check</p>
+                <p className="text-[11px] sm:text-xs font-bold text-slate-800">{t("inspectedBadgeTitle")}</p>
+                <p className="hidden text-[10px] text-slate-500 sm:block">{t("inspectedBadgeSub")}</p>
               </div>
             </div>
 
@@ -67,8 +70,8 @@ const HeroBanner = () => {
                 <FileCheck size={16} />
               </div>
               <div>
-                <p className="text-[11px] sm:text-xs font-bold text-slate-800">RC Assistance</p>
-                <p className="hidden text-[10px] text-slate-500 sm:block">Hassle-free transfer</p>
+                <p className="text-[11px] sm:text-xs font-bold text-slate-800">{t("rcBadgeTitle")}</p>
+                <p className="hidden text-[10px] text-slate-500 sm:block">{t("rcBadgeSub")}</p>
               </div>
             </div>
 
@@ -77,8 +80,8 @@ const HeroBanner = () => {
                 <IndianRupee size={15} />
               </div>
               <div>
-                <p className="text-[11px] sm:text-xs font-bold text-slate-800">Best Prices</p>
-                <p className="hidden text-[10px] text-slate-500 sm:block">No hidden charges</p>
+                <p className="text-[11px] sm:text-xs font-bold text-slate-800">{t("priceBadgeTitle")}</p>
+                <p className="hidden text-[10px] text-slate-500 sm:block">{t("priceBadgeSub")}</p>
               </div>
             </div>
           </div>

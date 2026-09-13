@@ -8,49 +8,49 @@ import {
   MapPin,
   MessageCircle,
 } from "lucide-react";
-
-const features = [
-  {
-    icon: <ShieldCheck size={26} />,
-    title: "100% Verified Vehicles",
-    description: "Every motorcycle undergoes inspection before being listed.",
-  },
-  {
-    icon: <BadgeCheck size={26} />,
-    title: "Trusted Dealership",
-    description:
-      "Serving hundreds of satisfied customers with transparent pricing.",
-  },
-  {
-    icon: <IndianRupee size={26} />,
-    title: "Best Market Price",
-    description: "Competitive pricing with financing assistance available.",
-  },
-  {
-    icon: <Clock3 size={26} />,
-    title: "Quick Documentation",
-    description: "Fast RC transfer and hassle-free ownership process.",
-  },
-];
+import { useLanguage } from "../i18n/LanguageContext";
 
 const WhyUs = () => {
+  const { language, t } = useLanguage();
+
+  const features = [
+    {
+      icon: <ShieldCheck size={26} />,
+      title: language === "hi" ? "100% जांची गई बाइक्स" : "100% Verified Vehicles",
+      description: language === "hi" ? "हर बाइक को सूचीबद्ध करने से पहले पूरी जांच की जाती है।" : "Every motorcycle undergoes inspection before being listed.",
+    },
+    {
+      icon: <BadgeCheck size={26} />,
+      title: language === "hi" ? "विश्वसनीय डीलरशिप" : "Trusted Dealership",
+      description: language === "hi" ? "सैकड़ों संतुष्ट ग्राहकों को पारदर्शी मूल्य के साथ सेवा।" : "Serving hundreds of satisfied customers with transparent pricing.",
+    },
+    {
+      icon: <IndianRupee size={26} />,
+      title: language === "hi" ? "सर्वोत्तम बाजार मूल्य" : "Best Market Price",
+      description: language === "hi" ? "उचित दाम और आसान फाइनेंस सुविधा उपलब्ध।" : "Competitive pricing with financing assistance available.",
+    },
+    {
+      icon: <Clock3 size={26} />,
+      title: language === "hi" ? "त्वरित कागजी कार्यवाही" : "Quick Documentation",
+      description: language === "hi" ? "फास्ट आरसी ट्रांसफर और परेशानी मुक्त स्वामित्व प्रक्रिया।" : "Fast RC transfer and hassle-free ownership process.",
+    },
+  ];
+
   return (
     <section id="why-us" className="mx-auto max-w-7xl px-3.5 py-10 sm:px-6 sm:py-16">
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* WHY US */}
         <div className="rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-8 shadow-sm border border-slate-200/80">
           <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[var(--maroon)]">
-            Why Choose Us
+            {t("whyChooseUs")}
           </span>
 
           <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold text-[var(--ink)]">
-            Buy With Confidence
+            {t("buyWithConfidence")}
           </h2>
 
           <p className="mt-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-            We believe buying a pre-owned motorcycle should be simple,
-            transparent and trustworthy. Every bike is inspected before reaching
-            our showroom floor.
+            {t("whyUsDesc")}
           </p>
 
           <div className="mt-6 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
@@ -81,11 +81,11 @@ const WhyUs = () => {
 
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-[var(--ink)]">
-                  Have an Inquiry?
+                  {t("haveInquiry")}
                 </h3>
 
                 <p className="text-xs text-slate-500 font-medium">
-                  We'd be happy to answer your questions.
+                  {t("inquirySub")}
                 </p>
               </div>
             </div>
@@ -96,7 +96,7 @@ const WhyUs = () => {
                 className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all hover:border-[var(--maroon)] hover:shadow-xs"
               >
                 <div>
-                  <p className="text-[11px] text-slate-400 font-medium">Email Us</p>
+                  <p className="text-[11px] text-slate-400 font-medium">{t("emailUs")}</p>
                   <p className="text-xs sm:text-sm font-semibold text-slate-800">
                     contact@shreeganeshautodeal.com
                   </p>
@@ -111,9 +111,9 @@ const WhyUs = () => {
                 className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/30 px-4 py-3 transition-all hover:border-emerald-500 hover:shadow-xs"
               >
                 <div>
-                  <p className="text-[11px] text-emerald-700 font-medium">Instant Support</p>
+                  <p className="text-[11px] text-emerald-700 font-medium">{t("instantSupport")}</p>
                   <p className="text-xs sm:text-sm font-semibold text-emerald-900">
-                    WhatsApp Inquiry (+91 8982883521)
+                    WhatsApp (+91 8982883521)
                   </p>
                 </div>
                 <MessageCircle className="text-emerald-600 shrink-0" size={18} />
@@ -124,7 +124,7 @@ const WhyUs = () => {
                 className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all hover:border-blue-500 hover:shadow-xs"
               >
                 <div>
-                  <p className="text-[11px] text-slate-400 font-medium">Prefer talking?</p>
+                  <p className="text-[11px] text-slate-400 font-medium">{t("preferTalking")}</p>
                   <p className="text-xs sm:text-sm font-semibold text-slate-800">
                     +91 8982883521
                   </p>
@@ -142,22 +142,22 @@ const WhyUs = () => {
         >
           <div>
             <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-red-200">
-              Showroom Location
+              {t("visitShowroom")}
             </span>
 
-            <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold">Visit Us in Indore</h2>
+            <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold">{t("visitUsIndore")}</h2>
 
             <p className="mt-2 text-xs sm:text-sm leading-relaxed text-red-100">
-              Inspect bikes in person, take test rides, and complete documentation under one roof.
+              {t("showroomDesc")}
             </p>
 
             <div className="mt-6 space-y-3.5 text-xs sm:text-sm">
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 shrink-0 text-red-200" size={18} />
                 <div>
-                  <h3 className="font-bold text-white">Showroom Address</h3>
+                  <h3 className="font-bold text-white">{t("showroomAddress")}</h3>
                   <p className="text-red-100 font-medium">
-                    Shree Ganesh Autodeal, Indore, Madhya Pradesh
+                    {t("showroomAddressVal")}
                   </p>
                 </div>
               </div>
@@ -165,7 +165,7 @@ const WhyUs = () => {
               <div className="flex items-start gap-3">
                 <Phone className="mt-0.5 shrink-0 text-red-200" size={18} />
                 <div>
-                  <h3 className="font-bold text-white">Direct Phone</h3>
+                  <h3 className="font-bold text-white">{t("directPhone")}</h3>
                   <a href="tel:+918982883521" className="text-red-100 hover:text-white font-medium">
                     +91 8982883521
                   </a>
@@ -175,7 +175,7 @@ const WhyUs = () => {
               <div className="flex items-start gap-3">
                 <Mail className="mt-0.5 shrink-0 text-red-200" size={18} />
                 <div>
-                  <h3 className="font-bold text-white">Email Address</h3>
+                  <h3 className="font-bold text-white">{t("emailAddress")}</h3>
                   <p className="text-red-100 font-medium">contact@shreeganeshautodeal.com</p>
                 </div>
               </div>
@@ -187,9 +187,9 @@ const WhyUs = () => {
             <div className="border-b border-white/10 px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                 <MapPin size={14} className="text-red-200" />
-                <span>Showroom Location Map</span>
+                <span>{t("mapTitle")}</span>
               </div>
-              <span className="text-[10px] text-red-200 font-medium">Open 7 Days</span>
+              <span className="text-[10px] text-red-200 font-medium">{t("openDays")}</span>
             </div>
 
             <iframe
@@ -208,7 +208,7 @@ const WhyUs = () => {
               href="tel:+918982883521"
               className="flex-1 sm:flex-none text-center rounded-xl bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-[var(--maroon)] shadow-sm transition hover:bg-red-50 active:scale-95"
             >
-              Call Dealer
+              {t("callNow")}
             </a>
 
             <a
@@ -218,7 +218,7 @@ const WhyUs = () => {
               className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 rounded-xl border border-white/80 px-5 py-2.5 text-xs sm:text-sm font-bold text-white transition hover:bg-white/10 active:scale-95"
             >
               <MessageCircle size={16} />
-              <span>WhatsApp</span>
+              <span>{t("whatsApp")}</span>
             </a>
           </div>
         </div>

@@ -4,6 +4,8 @@ import { Loader2, X } from "lucide-react";
 import VehicleDetails from "./VehicleDetails";
 import type { SingleVehicleModel } from "../models/singleVehicleModel";
 
+import { useLanguage } from "../i18n/LanguageContext";
+
 interface VehicleDrawerProps {
   vehicle: SingleVehicleModel | null;
   loading: boolean;
@@ -15,6 +17,7 @@ const VehicleDrawer = ({
   loading,
   setSelectedVehicle,
 }: VehicleDrawerProps) => {
+  const { t } = useLanguage();
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -63,11 +66,11 @@ const VehicleDrawer = ({
         <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 py-3 sm:px-6 sm:py-3.5 backdrop-blur-lg">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-[var(--ink)]">
-              Vehicle Details
+              {t("vehicleDetailsTitle")}
             </h2>
 
             <p className="text-xs text-slate-500">
-              Verified Pre-Owned Motorcycle
+              {t("verifiedMotorcycleSub")}
             </p>
           </div>
 

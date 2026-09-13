@@ -21,6 +21,7 @@ import type { SingleVehicleModel } from "../models/singleVehicleModel";
 import { formatKm, formatPrice } from "../utils/formatter";
 import { useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface VehicleDetailsProps {
   vehicle: SingleVehicleModel;
@@ -160,11 +161,18 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
     trackMouse: true,
   });
 
-  const whatsappUrl = `https://wa.me/918982883521?text=${encodeURIComponent(
-    `Hi, I'm interested in the ${vehicle.title} (${vehicle.manufactureYear}) listed for ${formatPrice(
-      vehicle.price
-    )} on Shree Ganesh Autodeal. Is it still available?`
-  )}`;
+  const { language, t } = useLanguage();
+
+  const whatsappMessage =
+    language === "hi"
+      ? `नमस्ते, मैं श्री गणेश ऑटोडील पर सूचीबद्ध ${vehicle.title} (${vehicle.manufactureYear}) में रुचि रखता हूँ, जिसका मूल्य ${formatPrice(
+          vehicle.price
+        )} है। क्या यह उपलब्ध है?`
+      : `Hi, I'm interested in the ${vehicle.title} (${vehicle.manufactureYear}) listed for ${formatPrice(
+          vehicle.price
+        )} on Shree Ganesh Autodeal. Is it still available?`;
+
+  const whatsappUrl = `https://wa.me/918982883521?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <>
@@ -189,7 +197,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
             {/* Click to Enlarge Badge */}
             <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-xs">
-              Tap to enlarge
+              {t("tapToEnlarge")}
             </div>
           </button>
 
@@ -200,7 +208,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             </span>
             <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-slate-700 shadow-xs backdrop-blur-xs">
               <ShieldCheck size={12} className="text-emerald-600" />
-              Verified
+              {t("verified")}
             </span>
           </div>
 
@@ -230,7 +238,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
           {/* Price Overlay */}
           <div className="absolute bottom-3 left-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-              Listed Price
+              {t("listedPrice")}
             </p>
             <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-xs">
               {formatPrice(vehicle.price)}
@@ -306,26 +314,26 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <InfoCard
             icon={<Gauge size={18} />}
-            label="Kilometers"
+            label={t("kilometers")}
             value={formatKm(vehicle.kilometersDriven)}
           />
 
           <InfoCard
             icon={<Calendar size={18} />}
-            label="Year"
+            label={t("manufactureYear")}
             value={vehicle.manufactureYear}
           />
 
           <InfoCard
             icon={<Fuel size={18} />}
-            label="Fuel"
+            label={t("fuelType")}
             value={vehicle.fuelType}
           />
 
           <InfoCard
             icon={<User size={18} />}
-            label="Ownership"
-            value={`${vehicle.ownerSerial} Owner`}
+            label={t("ownership")}
+            value={`${vehicle.ownerSerial} ${t("ownerSerial")}`}
           />
         </div>
 
@@ -334,12 +342,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         ===================================================== */}
         <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
           <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
-            About this motorcycle
+            {t("aboutMotorcycle")}
           </h3>
 
           <p className="text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
-            {vehicle.description ||
-              "Every motorcycle at Shree Ganesh Autodeal goes through a thorough mechanical inspection before being listed for sale. Contact us for a test ride or RC documentation details."}
+            {vehicle.description || t("defaultDescription")}
           </p>
         </section>
 
@@ -348,43 +355,43 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         ===================================================== */}
         <section>
           <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
-            Specifications & Details
+            {t("specifications")}
           </h3>
 
           <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
             <SpecRow
               icon={<Tag size={16} />}
-              label="Brand"
+              label={t("brand")}
               value={vehicle.brand}
             />
 
             <SpecRow
               icon={<Tag size={16} />}
-              label="Model"
+              label={t("model")}
               value={vehicle.modelName}
             />
 
             <SpecRow
               icon={<Palette size={16} />}
-              label="Color"
+              label={t("color")}
               value={vehicle.color}
             />
 
             <SpecRow
               icon={<Tag size={16} />}
-              label="Category"
+              label={t("categoryLabel")}
               value={vehicle.category.name}
             />
 
             <SpecRow
               icon={<Calendar size={16} />}
-              label="Manufacture Year"
+              label={t("manufactureYear")}
               value={vehicle.manufactureYear}
             />
 
             <SpecRow
               icon={<MapPin size={16} />}
-              label="Location"
+              label={t("location")}
               value={vehicle.location}
             />
           </div>
@@ -399,7 +406,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             className="flex items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] py-3 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer"
           >
             <Phone size={16} />
-            <span>Call Dealer</span>
+            <span>{t("callDealer")}</span>
           </a>
 
           <a
@@ -409,7 +416,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50 py-3 text-xs sm:text-sm font-bold text-emerald-700 shadow-xs transition hover:bg-emerald-100 active:scale-95 cursor-pointer"
           >
             <MessageCircle size={16} className="text-emerald-600" />
-            <span>WhatsApp</span>
+            <span>{t("whatsApp")}</span>
           </a>
         </div>
       </div>

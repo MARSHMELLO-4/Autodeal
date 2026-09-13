@@ -3,6 +3,7 @@ import { Search, X, SlidersHorizontal, RotateCcw } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { filterModel } from "../models/fIltersModels";
 import type { categoryModel } from "../models/categoryModel";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface FilterPanelProps {
   filters: filterModel;
@@ -15,6 +16,7 @@ const FilterPanel = ({
   categories,
   setFilters,
 }: FilterPanelProps) => {
+  const { t } = useLanguage();
   const isFiltered = filters.search !== "" || filters.category !== "" || filters.status !== "AVAILABLE";
 
   const clearFilters = () => {
@@ -47,7 +49,7 @@ const FilterPanel = ({
                 search: event.target.value,
               }))
             }
-            placeholder="Search by brand, model, colour..."
+            placeholder={t("searchPlaceholder")}
             className="w-full bg-transparent text-sm text-[var(--ink)] outline-none placeholder:text-slate-400 font-medium"
           />
 
@@ -60,8 +62,8 @@ const FilterPanel = ({
                   search: "",
                 }))
               }
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition active:scale-95"
-              aria-label="Clear search"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
+              aria-label={t("clearSearch")}
             >
               <X size={14} />
             </button>
@@ -83,10 +85,10 @@ const FilterPanel = ({
                 }
                 className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-700 outline-none cursor-pointer"
               >
-                <option value="AVAILABLE">Available Only</option>
-                <option value="ALL">All Inventory</option>
-                <option value="RESERVED">Reserved</option>
-                <option value="SOLD">Sold</option>
+                <option value="AVAILABLE">{t("availableOnly")}</option>
+                <option value="ALL">{t("allInventory")}</option>
+                <option value="RESERVED">{t("reserved")}</option>
+                <option value="SOLD">{t("sold")}</option>
               </select>
             </div>
           </div>
@@ -96,10 +98,10 @@ const FilterPanel = ({
               type="button"
               onClick={clearFilters}
               className="flex items-center gap-1.5 rounded-2xl border border-red-200 bg-red-50/70 px-3 py-2.5 text-xs font-bold text-[var(--maroon)] transition hover:bg-red-100 active:scale-95 cursor-pointer shrink-0"
-              title="Reset all filters"
+              title={t("resetFilters")}
             >
               <RotateCcw size={14} />
-              <span className="hidden xs:inline">Reset</span>
+              <span className="hidden xs:inline">{t("resetFilters")}</span>
             </button>
           )}
         </div>
@@ -123,7 +125,7 @@ const FilterPanel = ({
                 : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
-            <span>All Bikes</span>
+            <span>{t("allBikes")}</span>
           </button>
 
           {/* Individual Category Pills */}

@@ -18,8 +18,10 @@ import SubscribeForm from "./layout/SubscribeForm";
 import { useVehicles } from "./hooks/useVehicles";
 import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
 import Alert from "@mui/material/Alert";
+import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<categoryModel[]>([]);
   const [selectedVehicle, setSelectedVehicle] =
     useState<SingleVehicleModel | null>(null);
@@ -100,7 +102,7 @@ function App() {
           onClose={() => setShowVehicleAddedAlert(false)}
           className="fixed right-4 top-20 z-[9999] max-w-sm shadow-xl rounded-2xl border border-emerald-200"
         >
-          A new vehicle has just been added to the inventory!
+          {t("vehicleAddedAlert")}
         </Alert>
       )}
 
@@ -115,24 +117,24 @@ function App() {
             <div className="mb-1 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Verified Inventory
+                {t("verifiedInventory")}
               </span>
             </div>
 
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
-                {activeCategory ? activeCategory.name : "Featured Motorcycles"}
+                {activeCategory ? activeCategory.name : t("featuredMotorcycles")}
               </h1>
 
               <span className="text-xs sm:text-sm font-medium text-slate-500">
-                • Inspected & Ready for Delivery
+                {t("readyForDelivery")}
               </span>
             </div>
           </div>
 
           <div className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 sm:px-3.5 sm:py-1.5 text-xs font-bold text-slate-700">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--maroon)]" />
-            <span>{vehicles.length} Bikes</span>
+            <span>{vehicles.length} {t("bikesCount")}</span>
           </div>
         </div>
 
@@ -182,11 +184,11 @@ function App() {
             </div>
 
             <h3 className="text-lg sm:text-xl font-bold text-slate-800">
-              No motorcycles found
+              {t("noBikesFound")}
             </h3>
 
             <p className="mx-auto mt-1 max-w-sm text-xs sm:text-sm text-slate-500">
-              Try adjusting your search terms or select another category above.
+              {t("noBikesSub")}
             </p>
 
             <button
@@ -200,7 +202,7 @@ function App() {
               }
               className="mt-5 rounded-xl bg-[var(--maroon)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white transition hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer shadow-xs"
             >
-              Reset Filters
+              {t("resetAll")}
             </button>
           </div>
         )}
@@ -244,7 +246,7 @@ function App() {
       ======================================================= */}
       <div className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between border-t border-slate-200 bg-white/95 px-4 py-2.5 backdrop-blur-md sm:hidden shadow-lg">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Showroom</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("showroom")}</span>
           <span className="text-xs font-black text-slate-800">Shree Ganesh Autodeal</span>
         </div>
 
@@ -256,7 +258,7 @@ function App() {
             className="flex items-center gap-1.5 rounded-xl border border-emerald-500 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 active:scale-95"
           >
             <MessageCircle size={15} className="text-emerald-600" />
-            <span>WhatsApp</span>
+            <span>{t("whatsApp")}</span>
           </a>
 
           <a
@@ -264,7 +266,7 @@ function App() {
             className="flex items-center gap-1.5 rounded-xl bg-[var(--maroon)] px-3.5 py-2 text-xs font-bold text-white shadow-xs active:scale-95"
           >
             <Phone size={14} />
-            <span>Call</span>
+            <span>{t("call")}</span>
           </a>
         </div>
       </div>
