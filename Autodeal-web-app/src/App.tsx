@@ -18,7 +18,7 @@ import SubscribeForm from "./layout/SubscribeForm";
 import { useVehicles } from "./hooks/useVehicles";
 import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
 import Alert from "@mui/material/Alert";
-import { useLanguage } from "./i18n/LanguageContext";
+import { useLanguage } from "./i18n/useLanguage";
 
 function App() {
   const { t } = useLanguage();
@@ -69,7 +69,9 @@ function App() {
 
     getVehicle(id)
       .then(setSelectedVehicle)
-      .catch((err: any) => setError(err.message))
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Failed to load vehicle"),
+      )
       .finally(() => setDetailLoading(false));
   }
 
@@ -87,7 +89,7 @@ function App() {
   }, [showVehicleAddedAlert])
 
   return (
-    <main className="min-h-screen bg-[var(--paper)] pb-16 sm:pb-0">
+    <main className="min-h-screen bg-[var(--paper)] pb-24 sm:pb-0">
       {showSubscribe && (
         <SubscribeForm onClose={() => setShowSubscribe(false)} />
       )}
@@ -110,30 +112,30 @@ function App() {
       <HeroBanner />
 
       {/* Inventory Section */}
-      <section id="inventory" className="mx-auto max-w-7xl px-3.5 py-6 sm:px-6 sm:py-10">
+      <section id="inventory" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
         {/* Section Header */}
         <div className="mb-5 flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between sm:mb-7">
           <div>
             <div className="mb-1 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-moss">
                 {t("verifiedInventory")}
               </span>
             </div>
 
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-              <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
+              <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
                 {activeCategory ? activeCategory.name : t("featuredMotorcycles")}
               </h1>
 
-              <span className="text-xs sm:text-sm font-medium text-slate-500">
+              <span className="text-xs sm:text-sm font-medium text-moss">
                 {t("readyForDelivery")}
               </span>
             </div>
           </div>
 
-          <div className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 sm:px-3.5 sm:py-1.5 text-xs font-bold text-slate-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--maroon)]" />
+          <div className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-ink ring-1 ring-hairedge">
+            <span className="h-1.5 w-1.5 rounded-full bg-maroon-600" />
             <span>{vehicles.length} {t("bikesCount")}</span>
           </div>
         </div>
@@ -149,7 +151,7 @@ function App() {
 
         {/* Error Notification */}
         {(error || vehicleError) && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-medium text-red-600">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
             {error || vehicleError}
           </div>
         )}
@@ -160,7 +162,7 @@ function App() {
             {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 sm:p-3 shadow-xs animate-pulse"
+                className="overflow-hidden rounded-2xl border border-hairedge bg-white p-2.5 sm:p-3 shadow-xs animate-pulse"
               >
                 <div className="aspect-[4/3] w-full rounded-xl bg-slate-200" />
                 <div className="mt-3 h-3 w-3/4 rounded-md bg-slate-200" />
@@ -178,16 +180,16 @@ function App() {
 
         {/* Empty State */}
         {!loading && vehicles.length === 0 && (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white px-4 py-16 text-center sm:px-6 sm:py-20 shadow-xs">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-[var(--maroon)]">
+          <div className="rounded-3xl border border-dashed border-hairedge bg-white px-4 py-16 text-center sm:px-6 sm:py-20 shadow-xs">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-maroon-50 text-maroon-600">
               <Bike size={32} />
             </div>
 
-            <h3 className="text-lg sm:text-xl font-bold text-slate-800">
+            <h3 className="font-display text-lg sm:text-xl font-bold text-ink">
               {t("noBikesFound")}
             </h3>
 
-            <p className="mx-auto mt-1 max-w-sm text-xs sm:text-sm text-slate-500">
+            <p className="mx-auto mt-1 max-w-sm text-sm text-moss">
               {t("noBikesSub")}
             </p>
 
@@ -200,7 +202,7 @@ function App() {
                   status: "AVAILABLE",
                 })
               }
-              className="mt-5 rounded-xl bg-[var(--maroon)] px-5 py-2.5 text-xs sm:text-sm font-bold text-white transition hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer shadow-xs"
+              className="mt-5 rounded-xl bg-maroon-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-maroon-800 active:scale-95 cursor-pointer shadow-xs"
             >
               {t("resetAll")}
             </button>
@@ -226,7 +228,7 @@ function App() {
       {/* =======================================================
           WHY US & TRUST
       ======================================================= */}
-      <section className="border-t border-slate-200/80 bg-white">
+      <section className="border-t border-hairedge bg-paper-soft">
         <WhyUs />
       </section>
 
@@ -244,10 +246,13 @@ function App() {
       {/* =======================================================
           STICKY MOBILE QUICK CONTACT BAR (Thumb-friendly bottom bar)
       ======================================================= */}
-      <div className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between border-t border-slate-200 bg-white/95 px-4 py-2.5 backdrop-blur-md sm:hidden shadow-lg">
+      <div
+        className="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between rounded-t-2xl border-t border-hairedge bg-paper-soft/95 px-4 pt-2.5 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-md sm:hidden"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}
+      >
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t("showroom")}</span>
-          <span className="text-xs font-black text-slate-800">Shree Ganesh Autodeal</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-moss">{t("showroom")}</span>
+          <span className="text-xs font-black text-ink">Shree Ganesh Autodeal</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -255,7 +260,7 @@ function App() {
             href="https://wa.me/918982883521"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-xl border border-emerald-500 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-400 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 active:scale-95"
           >
             <MessageCircle size={15} className="text-emerald-600" />
             <span>{t("whatsApp")}</span>
@@ -263,7 +268,7 @@ function App() {
 
           <a
             href="tel:+918982883521"
-            className="flex items-center gap-1.5 rounded-xl bg-[var(--maroon)] px-3.5 py-2 text-xs font-bold text-white shadow-xs active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl bg-maroon-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs active:scale-95"
           >
             <Phone size={14} />
             <span>{t("call")}</span>

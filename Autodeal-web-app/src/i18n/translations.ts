@@ -30,6 +30,8 @@ export interface Translations {
   searchPlaceholder: string;
   clearSearch: string;
   allBikes: string;
+  filterAvailable: string;
+  filterAll: string;
   availableOnly: string;
   allInventory: string;
   reserved: string;
@@ -132,6 +134,8 @@ export const translations: Record<Language, Translations> = {
     searchPlaceholder: "Search by brand, model, colour...",
     clearSearch: "Clear search",
     allBikes: "All Bikes",
+    filterAvailable: "Available",
+    filterAll: "All",
     availableOnly: "Available Only",
     allInventory: "All Inventory",
     reserved: "Reserved",
@@ -232,6 +236,8 @@ export const translations: Record<Language, Translations> = {
     searchPlaceholder: "ब्रांड, मॉडल, रंग खोजें...",
     clearSearch: "सर्च हटाएं",
     allBikes: "सभी बाइक्स",
+    filterAvailable: "उपलब्ध",
+    filterAll: "सभी",
     availableOnly: "उपलब्ध केवल",
     allInventory: "सभी इन्वेंटरी",
     reserved: "बुक हो चुकी",

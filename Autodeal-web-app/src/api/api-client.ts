@@ -30,7 +30,11 @@ export function getCategories() {
   return request("/api/catalog/categories");
 }
 
-export function getVehicles(filters: any) {
+export function getVehicles(filters: {
+  search: string;
+  category: string;
+  status: string;
+}) {
   const params = new URLSearchParams({ page: "0", size: "60" });
   if (filters.search) params.set("search", filters.search);
   if (filters.category) params.set("category", filters.category);

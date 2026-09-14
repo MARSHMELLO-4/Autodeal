@@ -16,13 +16,9 @@ export interface VehicleCategory {
   updatedAt: string;
 }
 
-export interface VehicleDocument {
-  // Add fields when your backend starts returning them
-}
+export type VehicleDocument = Record<string, never>;
 
-export interface VehicleSale {
-  // Add fields when your backend starts returning them
-}
+export type VehicleSale = Record<string, never>;
 
 export interface SingleVehicleModel extends VehicleModel {
   registrationNumber: string;

@@ -26,7 +26,7 @@ describe("useVehicles hook", () => {
 
     vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
       content: mockVehicles,
-    } as any);
+    } );
 
     const filters: filterModel = { search: "", category: "", status: "AVAILABLE" };
     const { result } = renderHook(() => useVehicles(filters), { wrapper });
@@ -52,10 +52,10 @@ describe("useVehicles hook", () => {
       .spyOn(apiClient, "getVehicles")
       .mockResolvedValueOnce({
         content: mockVehicles1,
-      } as any)
+      } )
       .mockResolvedValueOnce({
         content: mockVehicles2,
-      } as any);
+      } );
 
     const { result, rerender } = renderHook(
       ({ filters }) => useVehicles(filters),
@@ -97,7 +97,7 @@ describe("useVehicles hook", () => {
   it("should handle empty vehicle list", async () => {
     vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
       content: [],
-    } as any);
+    } );
 
     const filters: filterModel = {
       search: "nonexistent",
@@ -140,7 +140,7 @@ describe("useVehicles hook", () => {
 
     const getVehiclesSpy = vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
       content: mockVehicles,
-    } as any);
+    } );
 
     const filters: filterModel = {
       search: "Activa",
@@ -165,7 +165,7 @@ describe("useVehicles hook", () => {
 
     const getVehiclesSpy = vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
       content: mockVehicles,
-    } as any);
+    } );
 
     const filters: filterModel = {
       search: "",

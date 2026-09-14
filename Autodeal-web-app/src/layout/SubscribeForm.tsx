@@ -165,13 +165,15 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:px-4 animate-[fadeIn_.2s_ease]"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
+        className="w-full max-w-md rounded-t-3xl bg-white p-6 pb-safe shadow-2xl sm:rounded-3xl sm:p-7 animate-[sheetUp_.3s_cubic-bezier(.2,.9,.3,1)]"
       >
+        {/* Mobile drag handle */}
+        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" />
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>

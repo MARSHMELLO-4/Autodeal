@@ -1,16 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { translations, type Language, type Translations } from "./translations";
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  toggleLanguage: () => void;
-  t: (key: keyof Translations) => string;
-}
+import { LanguageContext } from "./language-context";
 
 const STORAGE_KEY = "autodeal_language";
-
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>(() => {
@@ -52,18 +44,4 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </LanguageContext.Provider>
   );
-};
-
-export const useLanguage = (): LanguageContextType => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    // Return a safe fallback if used outside provider (e.g. in tests without provider)
-    return {
-      language: "en",
-      setLanguage: () => {},
-      toggleLanguage: () => {},
-      t: (key: keyof Translations) => translations.en[key] || "",
-    };
-  }
-  return context;
 };

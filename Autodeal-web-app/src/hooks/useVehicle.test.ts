@@ -13,7 +13,7 @@ describe("useVehicle hook", () => {
 
     vi.spyOn(apiClient, "getVehicle").mockResolvedValue({
       content: mockVehicle,
-    } as any);
+    } );
 
     const { result } = renderHook(() => useVehicle("10"));
 
@@ -34,10 +34,10 @@ describe("useVehicle hook", () => {
       .spyOn(apiClient, "getVehicle")
       .mockResolvedValueOnce({
         content: mockVehicle1,
-      } as any)
+      } )
       .mockResolvedValueOnce({
         content: mockVehicle2,
-      } as any);
+      } );
 
     const { result, rerender } = renderHook(
       ({ id }) => useVehicle(id),
@@ -85,7 +85,7 @@ describe("useVehicle hook", () => {
 
     vi.spyOn(apiClient, "getVehicle").mockResolvedValue({
       content: mockVehicle,
-    } as any);
+    } );
 
     const { result } = renderHook(() => useVehicle("10"));
 

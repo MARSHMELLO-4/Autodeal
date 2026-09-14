@@ -162,7 +162,7 @@ describe("VehicleCard component", () => {
   it("should handle vehicle with null price gracefully", () => {
     const vehicleWithNullPrice: VehicleModel = {
       ...mockVehicle,
-      price: null as any,
+      price: null as unknown as number,
     };
 
     const onOpen = vi.fn();

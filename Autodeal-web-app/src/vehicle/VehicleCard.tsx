@@ -1,7 +1,8 @@
 import { ArrowRight, Bike, Calendar, Gauge, MessageCircle } from "lucide-react";
 import type { VehicleModel } from "../models/vehicleModel";
 import { formatKm, formatPrice } from "../utils/formatter";
-import { useLanguage } from "../i18n/LanguageContext";
+import { buildWhatsAppUrl } from "../utils/whatsapp";
+import { useLanguage } from "../i18n/useLanguage";
 
 interface VehicleCardProps {
   vehicle: VehicleModel;
@@ -17,19 +18,15 @@ const statusStyles: Record<string, string> = {
 const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
   const { language, t } = useLanguage();
 
-  const whatsappMessage =
-    language === "hi"
-      ? `नमस्ते, मैं श्री गणेश ऑटोडील पर सूचीबद्ध ${vehicle.title} (${vehicle.manufactureYear}) में रुचि रखता हूँ, जिसका मूल्य ${formatPrice(
-          vehicle.price
-        )} है। क्या यह उपलब्ध है?`
-      : `Hi, I'm interested in the ${vehicle.title} (${vehicle.manufactureYear}) listed for ${formatPrice(
-          vehicle.price
-        )} on Shree Ganesh Autodeal. Is it still available?`;
-
-  const whatsappUrl = `https://wa.me/918982883521?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = buildWhatsAppUrl(
+    vehicle.title,
+    vehicle.manufactureYear,
+    vehicle.price,
+    language,
+  );
 
   return (
-    <article className="group overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.99]">
       {/* IMAGE */}
       <button
         type="button"
@@ -53,7 +50,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
         )}
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
 
         {/* Status */}
         <div
@@ -63,14 +60,14 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
         </div>
 
         {/* Category */}
-        <div className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-[var(--ink)] shadow-sm backdrop-blur">
+        <div className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-ink shadow-sm backdrop-blur">
           {vehicle.category.name}
         </div>
 
         {/* Price */}
         <div className="absolute bottom-3 left-3">
           <p className="text-[10px] font-medium uppercase tracking-widest text-white/70">
-            Price
+            {t("priceLabel")}
           </p>
 
           <p className="text-base sm:text-xl font-black text-white">
@@ -80,14 +77,14 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
       </button>
 
       {/* CONTENT */}
-      <div className="p-2.5 sm:p-4">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-4">
         {/* Bike name */}
-        <h2 className="truncate text-xs sm:text-lg font-bold leading-tight text-[var(--ink)]">
+        <h2 className="truncate text-sm sm:text-lg font-bold leading-tight text-ink">
           {vehicle.title}
         </h2>
 
         {/* Brand / model */}
-        <p className="mt-0.5 sm:mt-1 truncate text-xs text-[var(--moss)]">
+        <p className="mt-0.5 sm:mt-1 truncate text-xs text-moss">
           {vehicle.brand} • {vehicle.modelName}
         </p>
 
@@ -110,7 +107,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
             type="button"
             aria-label="View Details"
             onClick={() => onOpen(vehicle.id.toString())}
-            className="group/button flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--maroon)] py-2 sm:py-2.5 text-xs font-bold text-white transition-all duration-200 hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer shadow-xs"
+            className="group/button flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-maroon-700 py-2 sm:py-2.5 text-xs font-bold text-white transition-all duration-200 hover:bg-maroon-800 active:scale-95 cursor-pointer shadow-xs"
           >
             <span>{t("viewDetails")}</span>
             <ArrowRight

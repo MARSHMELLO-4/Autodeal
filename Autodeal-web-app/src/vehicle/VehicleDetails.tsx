@@ -5,9 +5,7 @@ import {
   Fuel,
   Gauge,
   MapPin,
-  MessageCircle,
   Palette,
-  Phone,
   Plus,
   Minus,
   RotateCcw,
@@ -21,7 +19,7 @@ import type { SingleVehicleModel } from "../models/singleVehicleModel";
 import { formatKm, formatPrice } from "../utils/formatter";
 import { useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable";
-import { useLanguage } from "../i18n/LanguageContext";
+import { useLanguage } from "../i18n/useLanguage";
 
 interface VehicleDetailsProps {
   vehicle: SingleVehicleModel;
@@ -161,26 +159,15 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
     trackMouse: true,
   });
 
-  const { language, t } = useLanguage();
-
-  const whatsappMessage =
-    language === "hi"
-      ? `नमस्ते, मैं श्री गणेश ऑटोडील पर सूचीबद्ध ${vehicle.title} (${vehicle.manufactureYear}) में रुचि रखता हूँ, जिसका मूल्य ${formatPrice(
-          vehicle.price
-        )} है। क्या यह उपलब्ध है?`
-      : `Hi, I'm interested in the ${vehicle.title} (${vehicle.manufactureYear}) listed for ${formatPrice(
-          vehicle.price
-        )} on Shree Ganesh Autodeal. Is it still available?`;
-
-  const whatsappUrl = `https://wa.me/918982883521?text=${encodeURIComponent(whatsappMessage)}`;
+  const { t } = useLanguage();
 
   return (
     <>
-      <div className="space-y-6 pb-2">
+      <div className="space-y-5 sm:space-y-7">
         {/* =====================================================
             MAIN IMAGE CONTAINER
         ===================================================== */}
-        <div {...handlers} className="relative overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80 shadow-xs">
+        <div {...handlers} className="relative overflow-hidden rounded-2xl bg-slate-100 border border-hairedge shadow-sm">
           <button
             type="button"
             onClick={() => openLightbox()}
@@ -196,7 +183,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
             {/* Click to Enlarge Badge */}
-            <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-xs">
+            <div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-medium text-white backdrop-blur-xs">
               {t("tapToEnlarge")}
             </div>
           </button>
@@ -206,7 +193,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-xs">
               {vehicle.status}
             </span>
-            <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-slate-700 shadow-xs backdrop-blur-xs">
+            <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-ink shadow-xs backdrop-blur-xs">
               <ShieldCheck size={12} className="text-emerald-600" />
               {t("verified")}
             </span>
@@ -255,7 +242,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 <span
                   key={index}
                   className={`h-1.5 rounded-full transition-all ${
-                    currentImage === index ? "w-5 bg-[var(--maroon)]" : "w-1.5 bg-slate-300"
+                    currentImage === index ? "w-5 bg-maroon-600" : "w-1.5 bg-moss/25"
                   }`}
                 />
               ))}
@@ -270,8 +257,8 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                   onClick={() => openLightbox(index)}
                   className={`h-14 w-18 shrink-0 overflow-hidden rounded-xl border-2 transition-all cursor-pointer ${
                     currentImage === index
-                      ? "border-[var(--maroon)] ring-2 ring-red-100"
-                      : "border-slate-200 opacity-70 hover:opacity-100"
+                      ? "border-maroon-600 ring-2 ring-maroon-100"
+                      : "border-hairedge opacity-70 hover:opacity-100"
                   }`}
                 >
                   <img
@@ -289,21 +276,21 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             TITLE & BASIC INFO
         ===================================================== */}
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="rounded-md bg-red-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[var(--maroon)]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="rounded-md bg-maroon-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-maroon-700">
               {vehicle.category.name}
             </span>
-            <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs font-semibold text-slate-500">
+            <span className="text-xs text-moss">•</span>
+            <span className="text-xs font-semibold text-moss">
               {vehicle.location}
             </span>
           </div>
 
-          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
             {vehicle.title}
           </h1>
 
-          <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
+          <p className="mt-1 text-sm text-moss">
             {vehicle.brand} • {vehicle.modelName}
           </p>
         </div>
@@ -340,12 +327,12 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         {/* =====================================================
             DESCRIPTION
         ===================================================== */}
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-          <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
+        <section className="rounded-2xl border border-hairedge bg-white p-4 sm:p-5 shadow-xs">
+          <h3 className="font-display mb-2 text-sm sm:text-base font-bold text-ink">
             {t("aboutMotorcycle")}
           </h3>
 
-          <p className="text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
+          <p className="text-sm leading-relaxed text-moss font-medium">
             {vehicle.description || t("defaultDescription")}
           </p>
         </section>
@@ -354,11 +341,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             SPECIFICATIONS TABLE
         ===================================================== */}
         <section>
-          <h3 className="mb-2 text-sm sm:text-base font-bold text-[var(--ink)]">
+          <h3 className="font-display mb-2 text-sm sm:text-base font-bold text-ink">
             {t("specifications")}
           </h3>
 
-          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+          <div className="divide-y divide-hairedge overflow-hidden rounded-2xl border border-hairedge bg-white shadow-xs">
             <SpecRow
               icon={<Tag size={16} />}
               label={t("brand")}
@@ -396,50 +383,23 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             />
           </div>
         </section>
-
-        {/* =====================================================
-            STICKY BOTTOM CONTACT ACTIONS
-        ===================================================== */}
-        <div className="sticky bottom-0 z-20 grid grid-cols-2 gap-2.5 border-t border-slate-200 bg-white/95 py-3 backdrop-blur-md">
-          <a
-            href="tel:+918982883521"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[var(--maroon)] py-3 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--maroon-dark)] active:scale-95 cursor-pointer"
-          >
-            <Phone size={16} />
-            <span>{t("callDealer")}</span>
-          </a>
-
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50 py-3 text-xs sm:text-sm font-bold text-emerald-700 shadow-xs transition hover:bg-emerald-100 active:scale-95 cursor-pointer"
-          >
-            <MessageCircle size={16} className="text-emerald-600" />
-            <span>{t("whatsApp")}</span>
-          </a>
-        </div>
       </div>
-
 
       {/* =======================================================
           FULLSCREEN IMAGE LIGHTBOX
       ======================================================= */}
 
       {lightboxOpen && gallery.length > 0 && (
-
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 p-4"
           onClick={closeLightbox}
           onWheel={handleWheel}
         >
-
           {/* ===================================================
               TOP BAR
           =================================================== */}
 
           <div className="absolute left-4 right-4 top-4 z-20 flex items-center justify-between">
-
             <div className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
               {currentImage + 1} / {gallery.length}
             </div>
@@ -448,12 +408,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
               type="button"
               onClick={closeLightbox}
               className="rounded-full bg-white/10 p-3 text-white backdrop-blur transition hover:bg-white/20"
+              aria-label="Close lightbox"
             >
               <X size={22} />
             </button>
-
           </div>
-
 
           {/* ===================================================
               IMAGE
@@ -463,7 +422,6 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             className="flex h-full w-full items-center justify-center overflow-hidden"
             onClick={(event) => event.stopPropagation()}
           >
-
             <img
               src={gallery[currentImage]?.imageUrl}
               alt={gallery[currentImage]?.altText}
@@ -477,16 +435,13 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 setZoom((prev) => (prev === 1 ? 2 : 1))
               }
             />
-
           </div>
-
 
           {/* ===================================================
               PREVIOUS
           =================================================== */}
 
           {gallery.length > 1 && (
-
             <button
               type="button"
               onClick={(event) => {
@@ -494,19 +449,17 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 previousImage();
               }}
               className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition hover:bg-white/20"
+              aria-label="Previous image"
             >
               <ChevronLeft size={26} />
             </button>
-
           )}
-
 
           {/* ===================================================
               NEXT
           =================================================== */}
 
           {gallery.length > 1 && (
-
             <button
               type="button"
               onClick={(event) => {
@@ -514,12 +467,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 nextImage();
               }}
               className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur transition hover:bg-white/20"
+              aria-label="Next image"
             >
               <ChevronRight size={26} />
             </button>
-
           )}
-
 
           {/* ===================================================
               ZOOM CONTROLS
@@ -529,12 +481,12 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-2xl bg-white/10 p-1.5 backdrop-blur"
             onClick={(event) => event.stopPropagation()}
           >
-
             <button
               type="button"
               onClick={zoomOut}
               disabled={zoom <= 1}
               className="rounded-xl p-2.5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Zoom out"
             >
               <Minus size={18} />
             </button>
@@ -548,6 +500,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
               onClick={zoomIn}
               disabled={zoom >= 3}
               className="rounded-xl p-2.5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Zoom in"
             >
               <Plus size={18} />
             </button>
@@ -556,26 +509,22 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
               type="button"
               onClick={resetZoom}
               className="rounded-xl p-2.5 text-white transition hover:bg-white/15"
+              aria-label="Reset zoom"
             >
               <RotateCcw size={17} />
             </button>
-
           </div>
-
 
           {/* ===================================================
               THUMBNAILS
           =================================================== */}
 
           {gallery.length > 1 && (
-
             <div
               className="absolute bottom-5 right-5 hidden max-w-[40vw] gap-2 overflow-x-auto rounded-2xl bg-white/10 p-2 backdrop-blur md:flex"
               onClick={(event) => event.stopPropagation()}
             >
-
               {gallery.map((image, index) => (
-
                 <button
                   key={index}
                   type="button"
@@ -589,29 +538,20 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                       : "border-transparent opacity-60 hover:opacity-100"
                   }`}
                 >
-
                   <img
                     src={image.imageUrl}
                     alt={image.altText}
                     className="h-full w-full object-cover"
                   />
-
                 </button>
-
               ))}
-
             </div>
-
           )}
-
         </div>
-
       )}
-
     </>
   );
 };
-
 
 /* =============================================================
    INFO CARD
@@ -628,27 +568,23 @@ const InfoCard = ({
   label,
   value,
 }: InfoCardProps) => (
-  <div className="flex items-center gap-3 border-b border-r border-black/5 p-3 md:border-b-0">
+  <div className="flex items-center gap-3 rounded-2xl border border-hairedge bg-white p-3 shadow-xs">
 
-    <div className="shrink-0 text-[var(--maroon)]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-maroon-50 text-maroon-600">
       {icon}
     </div>
 
     <div className="min-w-0">
-
-      <p className="text-[9px] font-medium uppercase tracking-wider text-gray-400">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-moss">
         {label}
       </p>
 
-      <p className="truncate text-xs font-bold text-[var(--ink)]">
+      <p className="truncate text-sm font-bold text-ink">
         {value}
       </p>
-
     </div>
-
   </div>
 );
-
 
 /* =============================================================
    SPEC ROW
@@ -665,24 +601,21 @@ const SpecRow = ({
   label,
   value,
 }: SpecRowProps) => (
-  <div className="flex items-center justify-between gap-4 px-4 py-3">
+  <div className="flex items-center justify-between gap-4 px-4 py-3.5">
 
-    <div className="flex items-center gap-2.5 text-gray-400">
-
-      <span className="text-[var(--maroon)]">
+    <div className="flex items-center gap-2.5 text-moss">
+      <span className="text-maroon-600">
         {icon}
       </span>
 
-      <span className="text-xs font-medium">
+      <span className="text-xs font-medium sm:text-sm">
         {label}
       </span>
-
     </div>
 
-    <span className="text-right text-xs font-semibold text-[var(--ink)]">
+    <span className="text-right text-xs font-semibold text-ink sm:text-sm">
       {value}
     </span>
-
   </div>
 );
 

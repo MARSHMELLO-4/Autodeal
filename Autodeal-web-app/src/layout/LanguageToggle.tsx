@@ -1,5 +1,5 @@
 import { Globe } from "lucide-react";
-import { useLanguage } from "../i18n/LanguageContext";
+import { useLanguage } from "../i18n/useLanguage";
 
 interface LanguageToggleProps {
   className?: string;

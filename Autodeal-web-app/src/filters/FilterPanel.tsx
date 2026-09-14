@@ -1,15 +1,25 @@
-
-import { Search, X, SlidersHorizontal, RotateCcw } from "lucide-react";
+import { Search, X, RotateCcw, Check } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { filterModel } from "../models/fIltersModels";
 import type { categoryModel } from "../models/categoryModel";
-import { useLanguage } from "../i18n/LanguageContext";
+import { useLanguage } from "../i18n/useLanguage";
+import type { Translations } from "../i18n/translations";
 
 interface FilterPanelProps {
   filters: filterModel;
   categories: categoryModel[];
   setFilters: Dispatch<SetStateAction<filterModel>>;
 }
+
+const STATUS_OPTIONS: {
+  value: filterModel["status"];
+  labelKey: keyof Translations;
+}[] = [
+  { value: "AVAILABLE", labelKey: "filterAvailable" },
+  { value: "ALL", labelKey: "filterAll" },
+  { value: "RESERVED", labelKey: "reserved" },
+  { value: "SOLD", labelKey: "sold" },
+];
 
 const FilterPanel = ({
   filters,
@@ -32,12 +42,11 @@ const FilterPanel = ({
       className="space-y-3"
       id="categories"
     >
-      {/* Search & Status Bar */}
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-        {/* Search Input */}
-        <div className="relative flex flex-1 items-center rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-xs transition-all focus-within:border-[var(--maroon)] focus-within:ring-2 focus-within:ring-red-100">
+      {/* Search + Reset */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex flex-1 items-center rounded-2xl border border-hairedge bg-white px-4 py-3 shadow-xs transition-all focus-within:border-maroon-300 focus-within:ring-4 focus-within:ring-maroon-50">
           <Search
-            className="shrink-0 text-slate-400 mr-2.5"
+            className="shrink-0 text-moss mr-2.5"
             size={18}
           />
 
@@ -50,7 +59,7 @@ const FilterPanel = ({
               }))
             }
             placeholder={t("searchPlaceholder")}
-            className="w-full bg-transparent text-sm text-[var(--ink)] outline-none placeholder:text-slate-400 font-medium"
+            className="w-full bg-transparent text-sm sm:text-base text-ink outline-none placeholder:text-moss/70 font-medium"
           />
 
           {filters.search && (
@@ -62,7 +71,7 @@ const FilterPanel = ({
                   search: "",
                 }))
               }
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-maroon-50 text-maroon-700 transition active:scale-95 cursor-pointer"
               aria-label={t("clearSearch")}
             >
               <X size={14} />
@@ -70,45 +79,49 @@ const FilterPanel = ({
           )}
         </div>
 
-        {/* Status Filter & Reset */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 sm:w-44">
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-xs focus-within:border-[var(--maroon)] focus-within:ring-2 focus-within:ring-red-100">
-              <SlidersHorizontal size={16} className="text-slate-400 shrink-0" />
-              <select
-                value={filters.status}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: event.target.value as any,
-                  }))
-                }
-                className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-700 outline-none cursor-pointer"
-              >
-                <option value="AVAILABLE">{t("availableOnly")}</option>
-                <option value="ALL">{t("allInventory")}</option>
-                <option value="RESERVED">{t("reserved")}</option>
-                <option value="SOLD">{t("sold")}</option>
-              </select>
-            </div>
-          </div>
+        {isFiltered && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-maroon-100 bg-maroon-50 text-maroon-700 transition hover:bg-maroon-100 active:scale-95 cursor-pointer"
+            title={t("resetFilters")}
+            aria-label={t("resetFilters")}
+          >
+            <RotateCcw size={16} />
+          </button>
+        )}
+      </div>
 
-          {isFiltered && (
+      {/* Segmented Status Control (thumb-friendly) */}
+      <div className="grid grid-cols-4 gap-1 rounded-2xl border border-hairedge bg-paper p-1 shadow-xs">
+        {STATUS_OPTIONS.map((option) => {
+          const active = filters.status === option.value;
+          return (
             <button
+              key={option.value}
               type="button"
-              onClick={clearFilters}
-              className="flex items-center gap-1.5 rounded-2xl border border-red-200 bg-red-50/70 px-3 py-2.5 text-xs font-bold text-[var(--maroon)] transition hover:bg-red-100 active:scale-95 cursor-pointer shrink-0"
-              title={t("resetFilters")}
+              onClick={() =>
+                setFilters((current) => ({
+                  ...current,
+                  status: option.value,
+                }))
+              }
+              aria-pressed={active}
+              className={`flex items-center justify-center gap-1 rounded-xl px-1 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-[0.97] cursor-pointer ${
+                active
+                  ? "bg-white text-maroon-800 shadow-sm ring-1 ring-black/5"
+                  : "text-moss hover:text-ink"
+              }`}
             >
-              <RotateCcw size={14} />
-              <span className="hidden xs:inline">{t("resetFilters")}</span>
+              {active && <Check size={13} className="shrink-0 text-emerald-600" />}
+              <span className="truncate">{t(option.labelKey)}</span>
             </button>
-          )}
-        </div>
+          );
+        })}
       </div>
 
       {/* Touch-scrollable Category Chips */}
-      <div className="relative -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+      <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto py-1">
           {/* All Category Pill */}
           <button
@@ -119,10 +132,10 @@ const FilterPanel = ({
                 category: "",
               }))
             }
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer ${
               filters.category === ""
-                ? "bg-[var(--maroon)] text-white shadow-sm"
-                : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                ? "bg-maroon-700 text-white shadow-sm"
+                : "border border-hairedge bg-white text-ink hover:border-maroon-200 hover:bg-maroon-50/60"
             }`}
           >
             <span>{t("allBikes")}</span>
@@ -141,13 +154,13 @@ const FilterPanel = ({
                     category: category.slug,
                   }))
                 }
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer ${
                   isActive
-                    ? "bg-[var(--maroon)] text-white shadow-sm"
-                    : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    ? "bg-maroon-700 text-white shadow-sm"
+                    : "border border-hairedge bg-white text-ink hover:border-maroon-200 hover:bg-maroon-50/60"
                 }`}
               >
-                <span>{category.name}</span>
+                <span className="capitalize">{category.name}</span>
               </button>
             );
           })}
