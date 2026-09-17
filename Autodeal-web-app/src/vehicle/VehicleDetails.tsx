@@ -161,13 +161,19 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
   const { t } = useLanguage();
 
+  const delay = (ms: number) => ({ "--d": `${ms}ms` } as React.CSSProperties);
+
   return (
     <>
       <div className="space-y-5 sm:space-y-7">
         {/* =====================================================
             MAIN IMAGE CONTAINER
         ===================================================== */}
-        <div {...handlers} className="relative overflow-hidden rounded-2xl bg-slate-100 border border-hairedge shadow-sm">
+        <div
+          {...handlers}
+          className="anim-rise-soft relative overflow-hidden rounded-2xl bg-slate-100 border border-hairedge shadow-sm"
+          style={delay(60)}
+        >
           <button
             type="button"
             onClick={() => openLightbox()}
@@ -235,7 +241,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
         {/* Gallery Mobile Dots & Thumbnails */}
         {gallery.length > 1 && (
-          <div className="space-y-2">
+          <div className="anim-rise-soft space-y-2" style={delay(140)}>
             {/* Dots */}
             <div className="flex justify-center gap-1.5 sm:hidden">
               {gallery.map((_, index) => (
@@ -275,7 +281,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         {/* =====================================================
             TITLE & BASIC INFO
         ===================================================== */}
-        <div>
+        <div className="anim-rise-soft" style={delay(220)}>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="rounded-md bg-maroon-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-maroon-700">
               {vehicle.category.name}
@@ -298,7 +304,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         {/* =====================================================
             KEY HIGHLIGHTS GRID (2 cols on mobile, 4 on desktop)
         ===================================================== */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div
+          className="anim-rise-soft grid grid-cols-2 gap-2 sm:grid-cols-4"
+          style={delay(300)}
+        >
           <InfoCard
             icon={<Gauge size={18} />}
             label={t("kilometers")}
@@ -327,7 +336,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         {/* =====================================================
             DESCRIPTION
         ===================================================== */}
-        <section className="rounded-2xl border border-hairedge bg-white p-4 sm:p-5 shadow-xs">
+        <section
+          className="anim-rise-soft rounded-2xl border border-hairedge bg-white p-4 sm:p-5 shadow-xs"
+          style={delay(380)}
+        >
           <h3 className="font-display mb-2 text-sm sm:text-base font-bold text-ink">
             {t("aboutMotorcycle")}
           </h3>
@@ -340,7 +352,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         {/* =====================================================
             SPECIFICATIONS TABLE
         ===================================================== */}
-        <section>
+        <section className="anim-rise-soft" style={delay(460)}>
           <h3 className="font-display mb-2 text-sm sm:text-base font-bold text-ink">
             {t("specifications")}
           </h3>
@@ -426,7 +438,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
               src={gallery[currentImage]?.imageUrl}
               alt={gallery[currentImage]?.altText}
               draggable={false}
-              className="max-h-[85vh] max-w-[90vw] select-none object-contain transition-transform duration-200"
+              className="anim-zoom max-h-[85vh] max-w-[90vw] select-none object-contain transition-transform duration-200"
               style={{
                 transform: `scale(${zoom})`,
                 cursor: zoom > 1 ? "grab" : "zoom-in",
@@ -568,9 +580,8 @@ const InfoCard = ({
   label,
   value,
 }: InfoCardProps) => (
-  <div className="flex items-center gap-3 rounded-2xl border border-hairedge bg-white p-3 shadow-xs">
-
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-maroon-50 text-maroon-600">
+  <div className="lift flex items-center gap-3 rounded-2xl border border-hairedge bg-white p-3 shadow-xs hover:border-maroon-200 hover:shadow-md">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-maroon-50 text-maroon-600 transition-transform duration-300 group-hover:scale-110">
       {icon}
     </div>
 

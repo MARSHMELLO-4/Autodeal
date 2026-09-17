@@ -44,7 +44,7 @@ const VehicleDrawer = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-paper shadow-2xl animate-[sheetUp_.3s_cubic-bezier(.2,.9,.3,1)] md:h-[88vh] md:rounded-3xl"
+        className="relative flex h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-paper shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.4)] animate-[sheetUp_.34s_cubic-bezier(.2,.9,.3,1)] md:h-[88vh] md:rounded-3xl"
       >
         {/* Mobile Drag Indicator Bar */}
         <div className="flex justify-center bg-paper-soft pt-2.5 pb-1 md:hidden">
@@ -65,7 +65,7 @@ const VehicleDrawer = ({
 
           <button
             onClick={() => setSelectedVehicle(null)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-paper text-moss transition-all hover:bg-maroon-50 hover:text-maroon-700 active:scale-95 cursor-pointer"
+            className="btn-spring flex h-10 w-10 items-center justify-center rounded-full bg-paper text-moss hover:bg-maroon-50 hover:text-maroon-700 cursor-pointer"
             aria-label={t("closeDrawer")}
           >
             <X size={20} />
@@ -102,11 +102,11 @@ const VehicleDrawer = ({
 
         {/* Fixed Bottom CTA Bar (mobile) */}
         {!loading && vehicle && (
-          <div className="border-t border-hairedge bg-paper-soft/95 px-4 pt-3 pb-safe backdrop-blur-md md:hidden">
+          <div className="anim-slide-up border-t border-hairedge bg-paper-soft/95 px-4 pt-3 pb-safe backdrop-blur-md md:hidden">
             <div className="grid grid-cols-2 gap-2.5">
               <a
                 href="tel:+918982883521"
-                className="flex items-center justify-center gap-2 rounded-2xl bg-maroon-700 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-maroon-800 active:scale-95 cursor-pointer"
+                className="btn-spring flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-maroon-600 to-maroon-800 py-3.5 text-sm font-bold text-white shadow-md shadow-maroon-900/25 cursor-pointer"
               >
                 <Phone size={17} />
                 <span>{t("callDealer")}</span>
@@ -125,7 +125,7 @@ const VehicleDrawer = ({
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500 bg-emerald-50 py-3.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 active:scale-95 cursor-pointer"
+                className="btn-spring pulse-ring flex items-center justify-center gap-2 rounded-2xl border border-emerald-500 bg-emerald-50 py-3.5 text-sm font-bold text-emerald-700 cursor-pointer"
               >
                 <MessageCircle size={17} className="text-emerald-600" />
                 <span>{t("whatsApp")}</span>

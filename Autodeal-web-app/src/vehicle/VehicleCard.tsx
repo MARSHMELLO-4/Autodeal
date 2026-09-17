@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowRight, Bike, Calendar, Gauge, MessageCircle } from "lucide-react";
 import type { VehicleModel } from "../models/vehicleModel";
 import { formatKm, formatPrice } from "../utils/formatter";
@@ -17,6 +18,8 @@ const statusStyles: Record<string, string> = {
 
 const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
   const { language, t } = useLanguage();
+  const [imgReady, setImgReady] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
 
   const whatsappUrl = buildWhatsAppUrl(
     vehicle.title,
@@ -25,27 +28,44 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
     language,
   );
 
+  const showImage = Boolean(vehicle.thumbnailUrl) && !imgFailed;
+
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.99]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_14px_36px_-26px_rgba(28,25,23,0.35)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_-24px_rgba(153,27,27,0.34)] hover:ring-maroon-200/80 active:scale-[0.99]">
+      {/* Top gradient accent revealed on hover */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-maroon-700 via-maroon-500 to-amber-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        aria-hidden="true"
+      />
+
       {/* IMAGE */}
       <button
         type="button"
         onClick={() => onOpen(vehicle.id.toString())}
         className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-100 text-left cursor-pointer"
       >
-        {vehicle.thumbnailUrl ? (
-          <img
-            src={vehicle.thumbnailUrl}
-            alt={vehicle.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
+        {showImage ? (
+          <>
+            <div
+              className={`skeleton-shimmer absolute inset-0 transition-opacity duration-500 ${
+                imgReady ? "opacity-0" : "opacity-100"
+              }`}
+              aria-hidden="true"
+            />
+            <img
+              src={vehicle.thumbnailUrl ?? undefined}
+              alt={vehicle.title}
+              loading="lazy"
+              onLoad={() => setImgReady(true)}
+              onError={() => setImgFailed(true)}
+              className={`relative h-full w-full object-cover transition duration-700 group-hover:scale-105 ${
+                imgReady ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          </>
         ) : (
           <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-            <Bike
-              size={44}
-              className="text-slate-400"
-            />
+            <Bike size={44} className="text-slate-400" />
           </div>
         )}
 
@@ -54,8 +74,14 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
 
         {/* Status */}
         <div
-          className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur ${statusStyles[vehicle.status]}`}
+          className={`absolute left-3 top-3 flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur ${statusStyles[vehicle.status]}`}
         >
+          {vehicle.status === "AVAILABLE" && (
+            <span className="relative mr-1.5 inline-flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping-soft rounded-full bg-white" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+            </span>
+          )}
           {vehicle.status}
         </div>
 
@@ -70,7 +96,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
             {t("priceLabel")}
           </p>
 
-          <p className="text-base sm:text-xl font-black text-white">
+          <p className="text-base sm:text-xl font-black text-white drop-shadow-md">
             {formatPrice(vehicle.price)}
           </p>
         </div>
@@ -90,12 +116,12 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
 
         {/* Key Specs Micro-Chips */}
         <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px] font-medium text-slate-600">
-          <span className="inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-700">
+          <span className="inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-700 transition-colors group-hover:bg-maroon-50 group-hover:text-maroon-700">
             <Calendar size={11} className="text-slate-400 shrink-0" />
             {vehicle.manufactureYear}
           </span>
 
-          <span className="inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-700">
+          <span className="inline-flex items-center gap-0.5 rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-700 transition-colors group-hover:bg-maroon-50 group-hover:text-maroon-700">
             <Gauge size={11} className="text-slate-400 shrink-0" />
             {formatKm(vehicle.kilometersDriven)}
           </span>
@@ -107,7 +133,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
             type="button"
             aria-label="View Details"
             onClick={() => onOpen(vehicle.id.toString())}
-            className="group/button flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-maroon-700 py-2 sm:py-2.5 text-xs font-bold text-white transition-all duration-200 hover:bg-maroon-800 active:scale-95 cursor-pointer shadow-xs"
+            className="btn-spring group/button flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br from-maroon-600 to-maroon-800 py-2 sm:py-2.5 text-xs font-bold text-white shadow-sm shadow-maroon-900/20 cursor-pointer"
           >
             <span>{t("viewDetails")}</span>
             <ArrowRight
@@ -121,7 +147,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/80 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100 active:scale-95 cursor-pointer"
+            className="btn-spring flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/80 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer"
             title="Chat on WhatsApp"
             aria-label="Chat about this bike on WhatsApp"
           >

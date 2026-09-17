@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { X } from "lucide-react";
+import { Bell, Check, X } from "lucide-react";
 
 import {
   requestOtp,
@@ -170,28 +170,37 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-3xl bg-white p-6 pb-safe shadow-2xl sm:rounded-3xl sm:p-7 animate-[sheetUp_.3s_cubic-bezier(.2,.9,.3,1)]"
+        className="relative w-full max-w-md overflow-hidden rounded-t-3xl bg-white p-6 pb-safe shadow-2xl sm:rounded-3xl sm:p-7 animate-[sheetUp_.34s_cubic-bezier(.2,.9,.3,1)]"
       >
+        {/* Top accent gradient bar */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-maroon-700 via-maroon-500 to-amber-400" aria-hidden="true" />
+
         {/* Mobile drag handle */}
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" />
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-gray-900">
-              {otpSent ? "Verify Your Email" : "Stay Updated"}
-            </h2>
+          <div className="flex items-start gap-3">
+            <div className="anim-pop hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-maroon-50 text-maroon-600 sm:flex">
+              {otpSent ? <Check size={20} /> : <Bell size={20} />}
+            </div>
 
-            <p className="mt-2 text-sm leading-6 text-gray-500">
-              {otpSent
-                ? `Enter the 6-digit OTP sent to ${email}`
-                : "Get notified whenever a new motorcycle is added to our collection."}
-            </p>
+            <div>
+              <h2 className="font-display text-2xl font-extrabold tracking-tight text-gray-900">
+                {otpSent ? "Verify Your Email" : "Stay Updated"}
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                {otpSent
+                  ? `Enter the 6-digit OTP sent to ${email}`
+                  : "Get notified whenever a new motorcycle is added to our collection."}
+              </p>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="ml-4 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            className="btn-spring ml-4 rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -254,16 +263,17 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
               type="submit"
               disabled={loading}
               className="
+                btn-spring
                 mt-5 w-full
                 rounded-xl
-                bg-[var(--maroon)]
+                bg-gradient-to-br from-maroon-600 to-maroon-800
                 px-4 py-3
                 text-sm font-bold text-white
-                transition-all duration-300
-                hover:-translate-y-0.5
+                shadow-md shadow-maroon-900/20
                 hover:shadow-lg
                 disabled:cursor-not-allowed
                 disabled:opacity-60
+                disabled:saturate-50
               "
             >
               {loading ? "Sending OTP..." : "Send OTP"}
@@ -343,16 +353,17 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
                 timeLeft <= 0
               }
               className="
+                btn-spring
                 mt-5 w-full
                 rounded-xl
-                bg-[var(--maroon)]
+                bg-gradient-to-br from-maroon-600 to-maroon-800
                 px-4 py-3
                 text-sm font-bold text-white
-                transition-all duration-300
-                hover:-translate-y-0.5
+                shadow-md shadow-maroon-900/20
                 hover:shadow-lg
                 disabled:cursor-not-allowed
                 disabled:opacity-50
+                disabled:saturate-50
               "
             >
               {loading ? "Verifying..." : "Verify OTP"}
@@ -363,13 +374,13 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
               onClick={handleChangeEmail}
               disabled={loading}
               className="
+                btn-spring
                 mt-3 w-full
                 rounded-xl
                 border border-gray-200
                 px-4 py-3
                 text-sm font-bold
                 text-gray-600
-                transition
                 hover:bg-gray-50
                 disabled:opacity-50
               "

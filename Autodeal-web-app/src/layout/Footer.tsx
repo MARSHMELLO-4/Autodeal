@@ -10,9 +10,13 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useLanguage } from "../i18n/useLanguage";
+import { useReveal } from "../hooks/useReveal";
 
 const WhyUs = () => {
   const { language, t } = useLanguage();
+  const revealRef = useReveal<HTMLDivElement>();
+
+  const delay = (ms: number) => ({ "--d": `${ms}ms` } as React.CSSProperties);
 
   const features = [
     {
@@ -38,7 +42,11 @@ const WhyUs = () => {
   ];
 
   return (
-    <section id="why-us" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+    <section
+      id="why-us"
+      ref={revealRef}
+      className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16"
+    >
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* WHY US */}
         <div className="rounded-3xl bg-white p-5 shadow-sm border border-hairedge sm:p-8">
@@ -58,9 +66,9 @@ const WhyUs = () => {
             {features.map((item) => (
               <div
                 key={item.title}
-                className="rounded-2xl bg-paper p-4 border border-hairedge/80 transition hover:shadow-xs"
+                className="lift group rounded-2xl bg-paper p-4 border border-hairedge/80 hover:border-maroon-200 hover:bg-white hover:shadow-md"
               >
-                <div className="mb-3 inline-flex rounded-xl bg-maroon-50 p-2.5 text-maroon-600">
+                <div className="mb-3 inline-flex rounded-xl bg-maroon-50 p-2.5 text-maroon-600 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
                   {item.icon}
                 </div>
 
@@ -94,7 +102,7 @@ const WhyUs = () => {
             <div className="mt-4 grid gap-2.5">
               <a
                 href="mailto:contact@shreeganeshautodeal.com"
-                className="flex items-center justify-between rounded-2xl border border-hairedge bg-white px-4 py-3 transition-all hover:border-maroon-200 hover:shadow-xs"
+                className="btn-spring flex items-center justify-between rounded-2xl border border-hairedge bg-white px-4 py-3 hover:border-maroon-200 hover:shadow-md cursor-pointer"
               >
                 <div>
                   <p className="text-[11px] text-moss font-medium">{t("emailUs")}</p>
@@ -109,7 +117,7 @@ const WhyUs = () => {
                 href="https://wa.me/918982883521"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 transition-all hover:border-emerald-400 hover:shadow-xs"
+                className="btn-spring flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 hover:border-emerald-400 hover:shadow-md cursor-pointer"
               >
                 <div>
                   <p className="text-[11px] text-emerald-700 font-medium">{t("instantSupport")}</p>
@@ -122,7 +130,7 @@ const WhyUs = () => {
 
               <a
                 href="tel:+918982883521"
-                className="flex items-center justify-between rounded-2xl border border-hairedge bg-white px-4 py-3 transition-all hover:border-maroon-200 hover:shadow-xs"
+                className="btn-spring flex items-center justify-between rounded-2xl border border-hairedge bg-white px-4 py-3 hover:border-maroon-200 hover:shadow-md cursor-pointer"
               >
                 <div>
                   <p className="text-[11px] text-moss font-medium">{t("preferTalking")}</p>
@@ -139,25 +147,31 @@ const WhyUs = () => {
         {/* CONTACT SHOWROOM */}
         <div
           id="contact"
-          className="flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-maroon-800 to-maroon-900 p-5 sm:p-8 text-white shadow-lg"
+          className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-maroon-800 to-maroon-900 p-5 sm:p-8 text-white shadow-lg"
+          style={delay(120)}
         >
-          <div className="relative">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          {/* Ambient animated glows */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-maroon-400/20 blur-3xl animate-floaty2" />
+            <div className="absolute right-10 top-1/3 h-24 w-24 rounded-full bg-amber-300/10 blur-2xl animate-floaty" />
+          </div>
 
-            <span className="relative text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-red-200">
+          <div className="relative">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-red-200">
               {t("visitShowroom")}
             </span>
 
-            <h2 className="font-display relative mt-2 text-2xl sm:text-3xl font-extrabold">
+            <h2 className="font-display mt-2 text-2xl sm:text-3xl font-extrabold">
               {t("visitUsIndore")}
             </h2>
 
-            <p className="relative mt-2 text-sm leading-relaxed text-red-100">
+            <p className="mt-2 text-sm leading-relaxed text-red-100">
               {t("showroomDesc")}
             </p>
 
             <div className="relative mt-6 space-y-4 text-sm">
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 lift rounded-2xl p-2 -m-2 hover:bg-white/5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-xs">
                   <MapPin className="text-red-100" size={18} />
                 </div>
@@ -169,7 +183,7 @@ const WhyUs = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 lift rounded-2xl p-2 -m-2 hover:bg-white/5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-xs">
                   <Phone className="text-red-100" size={18} />
                 </div>
@@ -181,7 +195,7 @@ const WhyUs = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 lift rounded-2xl p-2 -m-2 hover:bg-white/5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-xs">
                   <Mail className="text-red-100" size={18} />
                 </div>
@@ -194,7 +208,7 @@ const WhyUs = () => {
           </div>
 
           {/* Map Embed Container */}
-          <div className="mt-6 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xs shadow-md">
+          <div className="mt-6 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xs shadow-md ring-1 ring-white/10">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                 <MapPin size={14} className="text-red-100" />
@@ -219,7 +233,7 @@ const WhyUs = () => {
           <div className="mt-6 flex flex-wrap gap-2.5">
             <a
               href="tel:+918982883521"
-              className="flex-1 text-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-maroon-800 shadow-sm transition hover:bg-red-50 active:scale-95"
+              className="btn-spring flex-1 text-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-maroon-800 shadow-md hover:bg-red-50 cursor-pointer"
             >
               {t("callNow")}
             </a>
@@ -228,7 +242,7 @@ const WhyUs = () => {
               href="https://wa.me/918982883521"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-white/80 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10 active:scale-95"
+              className="btn-spring flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-white/80 px-5 py-3 text-sm font-bold text-white hover:bg-white/10 cursor-pointer"
             >
               <MessageCircle size={16} />
               <span>{t("whatsApp")}</span>

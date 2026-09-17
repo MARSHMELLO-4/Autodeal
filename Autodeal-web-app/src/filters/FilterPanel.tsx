@@ -27,7 +27,10 @@ const FilterPanel = ({
   setFilters,
 }: FilterPanelProps) => {
   const { t } = useLanguage();
-  const isFiltered = filters.search !== "" || filters.category !== "" || filters.status !== "AVAILABLE";
+  const isFiltered =
+    filters.search !== "" ||
+    filters.category !== "" ||
+    filters.status !== "AVAILABLE";
 
   const clearFilters = () => {
     setFilters({
@@ -38,15 +41,12 @@ const FilterPanel = ({
   };
 
   return (
-    <section
-      className="space-y-3"
-      id="categories"
-    >
+    <section className="space-y-3" id="categories">
       {/* Search + Reset */}
       <div className="flex items-center gap-2">
-        <div className="relative flex flex-1 items-center rounded-2xl border border-hairedge bg-white px-4 py-3 shadow-xs transition-all focus-within:border-maroon-300 focus-within:ring-4 focus-within:ring-maroon-50">
+        <div className="relative flex flex-1 items-center rounded-2xl border border-hairedge bg-white px-4 py-3 shadow-xs transition-all duration-200 focus-within:-translate-y-px focus-within:border-maroon-300 focus-within:shadow-[0_8px_24px_-12px_rgba(153,27,27,0.35)] focus-within:ring-4 focus-within:ring-maroon-50">
           <Search
-            className="shrink-0 text-moss mr-2.5"
+            className="shrink-0 text-moss mr-2.5 transition-colors duration-200 focus-within:text-maroon-600"
             size={18}
           />
 
@@ -71,7 +71,7 @@ const FilterPanel = ({
                   search: "",
                 }))
               }
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-maroon-50 text-maroon-700 transition active:scale-95 cursor-pointer"
+              className="btn-spring flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-maroon-50 text-maroon-700"
               aria-label={t("clearSearch")}
             >
               <X size={14} />
@@ -83,7 +83,7 @@ const FilterPanel = ({
           <button
             type="button"
             onClick={clearFilters}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-maroon-100 bg-maroon-50 text-maroon-700 transition hover:bg-maroon-100 active:scale-95 cursor-pointer"
+            className="anim-pop btn-spring flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-maroon-100 bg-maroon-50 text-maroon-700 hover:bg-maroon-100 cursor-pointer"
             title={t("resetFilters")}
             aria-label={t("resetFilters")}
           >
@@ -107,13 +107,15 @@ const FilterPanel = ({
                 }))
               }
               aria-pressed={active}
-              className={`flex items-center justify-center gap-1 rounded-xl px-1 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-[0.97] cursor-pointer ${
+              className={`btn-spring flex items-center justify-center gap-1 rounded-xl px-1 py-2.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                 active
                   ? "bg-white text-maroon-800 shadow-sm ring-1 ring-black/5"
                   : "text-moss hover:text-ink"
               }`}
             >
-              {active && <Check size={13} className="shrink-0 text-emerald-600" />}
+              {active && (
+                <Check size={13} className="shrink-0 text-emerald-600" />
+              )}
               <span className="truncate">{t(option.labelKey)}</span>
             </button>
           );
@@ -132,9 +134,9 @@ const FilterPanel = ({
                 category: "",
               }))
             }
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer ${
+            className={`btn-spring flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold cursor-pointer ${
               filters.category === ""
-                ? "bg-maroon-700 text-white shadow-sm"
+                ? "animate-zoom bg-gradient-to-br from-maroon-700 to-maroon-800 text-white shadow-md shadow-maroon-900/25"
                 : "border border-hairedge bg-white text-ink hover:border-maroon-200 hover:bg-maroon-50/60"
             }`}
           >
@@ -154,9 +156,9 @@ const FilterPanel = ({
                     category: category.slug,
                   }))
                 }
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer ${
+                className={`btn-spring flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-bold cursor-pointer ${
                   isActive
-                    ? "bg-maroon-700 text-white shadow-sm"
+                    ? "animate-zoom bg-gradient-to-br from-maroon-700 to-maroon-800 text-white shadow-md shadow-maroon-900/25"
                     : "border border-hairedge bg-white text-ink hover:border-maroon-200 hover:bg-maroon-50/60"
                 }`}
               >
