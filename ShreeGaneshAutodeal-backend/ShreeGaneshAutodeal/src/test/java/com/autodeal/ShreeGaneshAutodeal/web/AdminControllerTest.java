@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.autodeal.ShreeGaneshAutodeal.domain.DocumentType;
 import com.autodeal.ShreeGaneshAutodeal.domain.FuelType;
 import com.autodeal.ShreeGaneshAutodeal.domain.VehicleStatus;
+import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordRequest;
@@ -366,6 +367,28 @@ class AdminControllerTest {
 					.andExpect(status().isNoContent());
 
 			verify(vehicleService).deleteDocument(1L);
+		}
+	}
+
+	@Nested
+	@DisplayName("AI Share Endpoint")
+	class AiShareEndpoint {
+
+		@Test
+		@DisplayName("POST /api/admin/vehicles/{id}/ai-share should return AI generated image")
+		void shouldReturnAiShareImage() throws Exception {
+			AiShareResponse response = new AiShareResponse(
+					15L, "Yamaha MT-15", "Yamaha", "MT-15", 2023, "PETROL",
+					8000, "Black", "160000", "aGVsbG8=", "image/png");
+
+			when(vehicleService.generateAiShare(15L)).thenReturn(response);
+
+			mockMvc.perform(post("/api/admin/vehicles/15/ai-share"))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.vehicleId", is(15)))
+					.andExpect(jsonPath("$.title", is("Yamaha MT-15")))
+					.andExpect(jsonPath("$.imageBase64", is("aGVsbG8=")))
+					.andExpect(jsonPath("$.mimeType", is("image/png")));
 		}
 	}
 

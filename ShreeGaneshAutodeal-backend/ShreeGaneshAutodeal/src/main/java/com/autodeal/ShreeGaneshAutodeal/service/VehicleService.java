@@ -17,6 +17,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.repository.*;
 import com.autodeal.ShreeGaneshAutodeal.service.RabitMQ.RabbitmqSender;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,8 +25,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -51,10 +54,16 @@ public class VehicleService {
 	private final VehicleImageRepository vehicleImageRepository;
 	private final LLMService llmService;
 	private final RabbitmqSender rabbitmqSender;
+	private final GeminiService geminiService;
+	private final PromoImageService promoImageService;
+
+	@Value("${promo.mode:template}")
+	private String promoMode;
 
 	public VehicleService(VehicleRepository vehicleRepository, VehicleDocumentRepository documentRepository,
 			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService,
-						  VehicleImageRepository vehicleImageRepository, LLMService llmService, RabbitmqSender rabbitmqSender ) {
+						  VehicleImageRepository vehicleImageRepository, LLMService llmService, RabbitmqSender rabbitmqSender,
+						  GeminiService geminiService, PromoImageService promoImageService) {
 		this.vehicleRepository = vehicleRepository;
 		this.documentRepository = documentRepository;
 		this.saleRecordRepository = saleRecordRepository;
@@ -63,6 +72,8 @@ public class VehicleService {
 		this.vehicleImageRepository = vehicleImageRepository;
 		this.llmService = llmService;
 		this.rabbitmqSender = rabbitmqSender;
+		this.geminiService = geminiService;
+		this.promoImageService = promoImageService;
 	}
 
 	@Transactional(readOnly = true)
@@ -147,6 +158,58 @@ public class VehicleService {
 		String aiDescription = llmService.generateAiDescription(vehicle);
 		vehicle.setDescription(aiDescription);
 		vehicleRepository.save(vehicle);
+	}
+
+	public AiShareResponse generateAiShare(Long vehicleId) {
+		Vehicle vehicle = getEntity(vehicleId);
+
+		System.out.println("Vehicle ID : " + vehicleId);
+
+		String imageUrl = vehicle.getThumbnailUrl() != null
+				? vehicle.getThumbnailUrl()
+				: vehicle.getImages().stream()
+						.min(Comparator.comparingInt(img -> img.getDisplayOrder() == null ? 0 : img.getDisplayOrder()))
+						.map(VehicleImage::getImageUrl)
+						.orElse(null);
+
+		if (imageUrl == null) {
+			throw new IllegalArgumentException(
+					"This bike has no photos yet. Add a photo before generating an AI share image.");
+		}
+
+		byte[] generated;
+		if ("gemini".equalsIgnoreCase(promoMode)) {
+			byte[] imageBytes = geminiService.downloadBikeImage(imageUrl);
+			String mimeType = detectImageMimeType(imageUrl);
+			generated = geminiService.generatePromoImage(vehicle, mimeType, imageBytes);
+		} else {
+			byte[] imageBytes = promoImageService.downloadBikeImage(imageUrl);
+			generated = promoImageService.generatePromoImage(vehicle, imageBytes);
+		}
+
+		return new AiShareResponse(
+				vehicle.getId(),
+				vehicle.getTitle(),
+				vehicle.getBrand(),
+				vehicle.getModelName(),
+				vehicle.getManufactureYear(),
+				vehicle.getFuelType() == null ? null : vehicle.getFuelType().name(),
+				vehicle.getKilometersDriven(),
+				vehicle.getColor(),
+				vehicle.getPrice() == null ? null : vehicle.getPrice().toPlainString(),
+				Base64.getEncoder().encodeToString(generated),
+				"image/png");
+	}
+
+	private String detectImageMimeType(String url) {
+		String lower = url.toLowerCase();
+		if (lower.contains(".png")) {
+			return "image/png";
+		}
+		if (lower.contains(".webp")) {
+			return "image/webp";
+		}
+		return "image/jpeg";
 	}
 
 	@Caching(evict = {

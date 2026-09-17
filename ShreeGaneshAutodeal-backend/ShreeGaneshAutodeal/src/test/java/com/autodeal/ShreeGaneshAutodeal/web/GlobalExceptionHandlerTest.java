@@ -100,4 +100,18 @@ class GlobalExceptionHandlerTest {
 		assertThat(response.getBody().status()).isEqualTo(413);
 		assertThat(response.getBody().message()).isEqualTo("Uploaded file is too large");
 	}
+
+	@Test
+	@DisplayName("Should handle IllegalStateException and return 500 INTERNAL_SERVER_ERROR")
+	void shouldHandleIllegalStateException() {
+		IllegalStateException ex = new IllegalStateException(
+				"Gemini API key is not configured. Add GEMINI_API_KEY to the backend environment.");
+
+		ResponseEntity<ApiError> response = exceptionHandler.serverError(ex);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().status()).isEqualTo(500);
+		assertThat(response.getBody().message()).contains("Gemini API key is not configured");
+	}
 }

@@ -10,6 +10,7 @@ import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_draft.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:shree_ganesh_autodeal_admin/models/ai_share_result.dart';
 
 class ApiClient {
   ApiClient(this.baseUrl);
@@ -68,6 +69,20 @@ class ApiClient {
       return Vehicle.fromJson(asJsonMap(json));
     } catch (e) {
       throw _handleException(e, 'Unable to fetch vehicle details');
+    }
+  }
+
+  Future<AiShareResult> generateAiShare(int vehicleId) async {
+    try {
+      final json = await _send(
+        'POST',
+        '/api/admin/vehicles/$vehicleId/ai-share',
+        {},
+      );
+
+      return AiShareResult.fromJson(asJsonMap(json));
+    } catch (e) {
+      throw _handleException(e, 'Unable to generate AI share image');
     }
   }
 

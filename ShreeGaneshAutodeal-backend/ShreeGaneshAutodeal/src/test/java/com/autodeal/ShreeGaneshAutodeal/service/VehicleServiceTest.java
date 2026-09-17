@@ -20,6 +20,7 @@ import com.autodeal.ShreeGaneshAutodeal.domain.VehicleStatus;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SalesReportResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDetailResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDocumentResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageRequest;
@@ -52,6 +53,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceTest {
@@ -79,6 +81,12 @@ class VehicleServiceTest {
 
 	@Mock
 	private LLMService llmService;
+
+	@Mock
+	private GeminiService geminiService;
+
+	@Mock
+	private PromoImageService promoImageService;
 
 	@InjectMocks
 	private VehicleService vehicleService;
@@ -335,6 +343,65 @@ class VehicleServiceTest {
 			assertThat(testVehicle.getDescription()).isEqualTo("AI generated sales copy");
 			verify(llmService).generateAiDescription(testVehicle);
 			verify(vehicleRepository).save(testVehicle);
+		}
+	}
+
+	@Nested
+	@DisplayName("generateAiShare Tests")
+	class GenerateAiShareTests {
+
+@Test
+	@DisplayName("Should generate share image with offline template renderer and return base64 response")
+	void shouldGenerateAiShareSuccessfully() {
+		byte[] downloaded = new byte[]{1, 2, 3};
+		byte[] generated = new byte[]{9, 8, 7};
+
+		when(vehicleRepository.findById(100L)).thenReturn(Optional.of(testVehicle));
+		when(promoImageService.downloadBikeImage("https://example.com/thumb.jpg")).thenReturn(downloaded);
+		when(promoImageService.generatePromoImage(testVehicle, downloaded))
+				.thenReturn(generated);
+
+		AiShareResponse response = vehicleService.generateAiShare(100L);
+
+		assertThat(response.vehicleId()).isEqualTo(100L);
+		assertThat(response.title()).isEqualTo("Royal Enfield Classic 350");
+		assertThat(response.imageBase64()).isEqualTo(
+				java.util.Base64.getEncoder().encodeToString(generated));
+		assertThat(response.mimeType()).isEqualTo("image/png");
+		verify(promoImageService).downloadBikeImage("https://example.com/thumb.jpg");
+		verify(promoImageService).generatePromoImage(testVehicle, downloaded);
+	}
+
+	@Test
+	@DisplayName("Should use Gemini API when promo mode is gemini")
+	void shouldUseGeminiWhenModeIsGemini() {
+		byte[] downloaded = new byte[]{1, 2, 3};
+		byte[] generated = new byte[]{9, 8, 7};
+		ReflectionTestUtils.setField(vehicleService, "promoMode", "gemini");
+
+		when(vehicleRepository.findById(100L)).thenReturn(Optional.of(testVehicle));
+		when(geminiService.downloadBikeImage("https://example.com/thumb.jpg")).thenReturn(downloaded);
+		when(geminiService.generatePromoImage(testVehicle, "image/jpeg", downloaded))
+				.thenReturn(generated);
+
+		AiShareResponse response = vehicleService.generateAiShare(100L);
+
+		assertThat(response.imageBase64()).isEqualTo(
+				java.util.Base64.getEncoder().encodeToString(generated));
+		verify(geminiService).downloadBikeImage("https://example.com/thumb.jpg");
+		verify(geminiService).generatePromoImage(testVehicle, "image/jpeg", downloaded);
+	}
+
+		@Test
+		@DisplayName("Should throw when vehicle has no photos")
+		void shouldThrowWhenVehicleHasNoPhotos() {
+			testVehicle.setThumbnailUrl(null);
+
+			when(vehicleRepository.findById(100L)).thenReturn(Optional.of(testVehicle));
+
+			assertThatThrownBy(() -> vehicleService.generateAiShare(100L))
+					.isInstanceOf(IllegalArgumentException.class)
+					.hasMessageContaining("no photos");
 		}
 	}
 

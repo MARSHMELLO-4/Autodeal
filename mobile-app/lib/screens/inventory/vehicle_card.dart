@@ -4,10 +4,16 @@ import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 class VehicleCard extends StatelessWidget {
-  const VehicleCard({required this.vehicle, required this.onTap, super.key});
+  const VehicleCard({
+    required this.vehicle,
+    required this.onTap,
+    required this.onAiShare,
+    super.key,
+  });
 
   final Vehicle vehicle;
   final VoidCallback onTap;
+  final VoidCallback onAiShare;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +59,27 @@ class VehicleCard extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    tooltip: 'AI Share',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(
+                      Icons.auto_awesome,
+                      size: 20,
+                      color: Color(0xff7c3aed),
+                    ),
+                    onPressed: onAiShare,
+                  ),
+                  const Text(
+                    'AI Share',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 4),
               StatusPill(status: vehicle.status),
             ],
           ),

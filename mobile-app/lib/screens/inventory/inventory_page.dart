@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/components/ai_share_flow.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/inventory/vehicle_card.dart';
 import 'package:shree_ganesh_autodeal_admin/screens/inventory/vehicle_details_bottomsheet.dart';
@@ -112,6 +113,11 @@ class _InventoryPageState extends State<InventoryPage> {
                 widget.api,
                 vehicle.id,
                 load,
+              ),
+              onAiShare: () => shareAiGeneratedImage(
+                context,
+                widget.api,
+                vehicle,
               ),
             ),
         ],

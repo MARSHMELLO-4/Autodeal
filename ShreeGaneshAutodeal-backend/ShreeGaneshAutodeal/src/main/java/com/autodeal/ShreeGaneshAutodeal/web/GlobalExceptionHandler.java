@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
 				.body(ApiError.of(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
 	}
 
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<ApiError> serverError(IllegalStateException ex) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage()));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiError> validation(MethodArgumentNotValidException ex) {
 		Map<String, String> errors = new LinkedHashMap<>();

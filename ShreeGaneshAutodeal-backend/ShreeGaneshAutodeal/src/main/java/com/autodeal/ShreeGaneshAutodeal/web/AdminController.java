@@ -2,6 +2,7 @@ package com.autodeal.ShreeGaneshAutodeal.web;
 
 import com.autodeal.ShreeGaneshAutodeal.domain.DocumentType;
 import com.autodeal.ShreeGaneshAutodeal.domain.VehicleStatus;
+import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordRequest;
@@ -141,6 +142,11 @@ public class AdminController {
 	@GetMapping("/vehicles/{id}/documents")
 	public List<VehicleDocumentResponse> vehicleDocuments(@PathVariable Long id) {
 		return vehicleService.getDocuments(id);
+	}
+
+	@PostMapping("/vehicles/{id}/ai-share")
+	public AiShareResponse generateAiShare(@PathVariable Long id) {
+		return vehicleService.generateAiShare(id);
 	}
 
 	@DeleteMapping("/documents/{id}")
