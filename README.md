@@ -55,7 +55,9 @@ Autodeal/
 
 <p align="center">
 
-  <img src="screenshots/add-bike.jpeg" width="220"/>
+  <img src="screenshots/add-bike-1.jpeg" width="220"/>
+
+  <img src="screenshots/add-bike-2.jpeg" width="220"/>
 
   <img src="screenshots/sales-report.jpeg" width="220"/>
 
@@ -105,6 +107,7 @@ Autodeal/
   - `vehicle_create` queue: Dispatches new vehicle alerts to all active subscribers via email in the background
   - `vehicle_llm_description` queue: Asynchronously generates rich sales copy via Groq LLM without blocking vehicle creation
   - `vehicle_sold` queue: Publishes sold-vehicle inventory updates to connected web clients
+  - Vehicle creation runs fully asynchronously: measured **89.6% faster (≈9.6x)** than the synchronous equivalent (see [Asynchronous Vehicle Creation Performance](#asynchronous-vehicle-creation-performance))
 - **Real-Time Inventory Updates**:
   - Spring STOMP endpoint exposed at `/ws`
   - Inventory topic broadcast on `/topic/inventory`
@@ -123,7 +126,7 @@ Autodeal/
 - Centralized exception handling with structured JSON error responses
 - Redis-backed cache for high-read catalog endpoints
 - Targeted cache eviction on inventory mutations
-- Comprehensive unit and slice tests (110 backend unit tests, 54 web app tests)
+- Comprehensive unit and slice tests (126 backend unit tests, 57 web app tests)
 - GitHub Actions CI pipeline for automated backend and frontend testing
 
 ---
@@ -499,6 +502,27 @@ Resume-ready bullet:
 
 ---
 
+## Asynchronous Vehicle Creation Performance
+
+Vehicle creation was benchmarked both synchronously and asynchronously in the backend. In the synchronous path, the Groq LLM description generation and subscriber email notifications run inline before the API responds. In the asynchronous path, those expensive operations are dispatched to RabbitMQ and processed in the background, so the API returns immediately after the database save.
+
+| Approach | Measured Time |
+| --- | ---: |
+| Synchronous (`createSync`) | 3,303 ms |
+| Asynchronous (`createAsync` via RabbitMQ) | 343 ms |
+
+The asynchronous flow saves **2,960 ms** per vehicle creation, which is an **≈89.6% reduction** in request time — roughly **9.6x faster**. The heavier work is offloaded to the message broker and never blocks the admin API response.
+
+### How the timings were measured
+
+- The backend instruments the vehicle creation flow with `System.nanoTime()` (`VehicleService.createSync` / `VehicleService.createAsync`) and logs the elapsed duration in milliseconds.
+- Both paths were run against the same environment and vehicle payload so the comparison isolates the sync vs. async offloading only.
+- The Flutter client also logs the round-trip request time via `Stopwatch` in `ApiClient`, so end-to-end latency can be compared from the admin app side.
+
+> Note: total duration depends on deployment, network distance, database size, and how long the Groq LLM call takes. The ratio between the two paths stays consistent because async simply removes the inline external network calls from the request thread.
+
+---
+
 ## Backend Environment Variables
 
 ```env
@@ -726,7 +750,7 @@ The Flutter application uses the admin API key for protected `/api/admin/**` req
 
 ### Running Backend Unit Tests
 
-Run the complete 110-test backend test suite:
+Run the complete 126-test backend test suite:
 
 ```powershell
 cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
@@ -736,7 +760,7 @@ cd ShreeGaneshAutodeal-backend\ShreeGaneshAutodeal
 
 ### Running React Web App Unit Tests
 
-The React web application uses **Vitest** and **React Testing Library** for unit testing (54 tests).
+The React web application uses **Vitest** and **React Testing Library** for unit testing (57 tests).
 
 Run the frontend unit test suite:
 
@@ -759,14 +783,21 @@ The frontend tests cover React component rendering, user interactions, API clien
 | Test Suite | Focus / Layer | Framework / Tools |
 | --- | --- | --- |
 | `VehicleCard.test.tsx` | Vehicle card rendering, interactions, pricing and edge cases | Vitest, React Testing Library |
-| `VehicleDetails.test.tsx` | Vehicle detail rendering and user interactions | Vitest, React Testing Library |
+| `Header.test.tsx` | Header rendering, navigation links, mobile menu, accessibility, and contact links | Vitest, React Testing Library |
+| `CategoryRail.test.tsx` | Category filter rail rendering, selection, and filter state management | Vitest, React Testing Library |
+| `LanguageToggle.test.tsx` | Language toggle defaulting, switching, and persistence | Vitest, React Testing Library |
+| `useVehicle.test.ts` | Single vehicle fetch hook, loading state, refetching, and error handling | Vitest |
+| `useVehicles.test.ts` | Vehicle list fetch hook, filter state, refetching, and error handling | Vitest |
+| `formatter.test.ts` | INR currency formatting and kilometers driven formatting | Vitest |
 | `api-client.test.ts` | API client requests, responses and error handling | Vitest |
 | `CategoryServiceTest` | Category CRUD, slug generation, name/slug uniqueness, string normalization | JUnit 5, Mockito |
-| `VehicleServiceTest` | Vehicle lifecycle, async RabbitMQ message queueing, post-commit dispatch, image/document management, mark-sold flow | JUnit 5, Mockito |
+| `VehicleServiceTest` | Vehicle lifecycle, sync/async creation paths, post-commit dispatch, image/document management, mark-sold flow | JUnit 5, Mockito |
 | `RabbitmqSenderTest` | Asynchronous message dispatching to `vehicle_create`, `vehicle_sold`, and `vehicle_llm_description` queues | JUnit 5, Mockito |
 | `RabbitmqReceiverTest` | Queue listener delegation to notification, vehicle, and WebSocket services with error isolation | JUnit 5, Mockito |
 | `NotificationServiceTest` | Active subscriber querying, parameter mapping, and notification dispatch | JUnit 5, Mockito |
 | `LLMServiceTest` | Automotive sales prompt generation from Vehicle entity and VehicleRequest DTO | JUnit 5 |
+| `GeminiServiceTest` | Gemini image generation, image download, prompt construction, and error handling | JUnit 5 |
+| `PromoImageServiceTest` | Template-based promo image generation, image download, and error handling | JUnit 5 |
 | `EmailServiceTest` | SimpleMailMessage OTP delivery and MimeMessage vehicle alert HTML rendering | JUnit 5, Mockito |
 | `SubscriberServiceTest` | Email normalization, OTP generation/validation, subscriber status lifecycle | JUnit 5, Mockito |
 | `OtpServiceTest` | Redis-backed 6-digit OTP generation, 5-minute TTL expiration, and one-time verification | JUnit 5, Mockito |
@@ -776,6 +807,7 @@ The frontend tests cover React component rendering, user interactions, API clien
 | `CatalogControllerTest` | Public REST catalog endpoints, filtered vehicle searches, details, test notification | MockMvc, Mockito |
 | `GlobalExceptionHandlerTest` | Global error translation (404, 400, 413) and validation error maps | JUnit 5 |
 | `VehicleSpecificationsTest` | Dynamic JPA Specifications matching (search, slug, status, price range) | Spring Boot Test, H2 |
+| `SecurityConfigTest` | API key filter chain, admin request rejection without key, public catalog access without key | JUnit 5 |
 | `SupabasePropertiesTest` | Supabase property configuration state verification | JUnit 5 |
 | `CacheKeysTests` | Deterministic cache key generation for Redis | JUnit 5 |
 | `ShreeGaneshAutodealApplicationTests` | Spring Boot context load sanity check | Spring Boot Test |
