@@ -20,6 +20,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.repository.*;
 import com.autodeal.ShreeGaneshAutodeal.service.RabitMQ.RabbitmqSender;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -56,6 +57,7 @@ public class VehicleService {
 	private final RabbitmqSender rabbitmqSender;
 	private final GeminiService geminiService;
 	private final PromoImageService promoImageService;
+	private final NotificationService notificationService; //this service is just for the performance measurement purpose
 
 	@Value("${promo.mode:template}")
 	private String promoMode;
@@ -63,7 +65,7 @@ public class VehicleService {
 	public VehicleService(VehicleRepository vehicleRepository, VehicleDocumentRepository documentRepository,
 			SaleRecordRepository saleRecordRepository, CategoryService categoryService, SupabaseStorageService storageService,
 						  VehicleImageRepository vehicleImageRepository, LLMService llmService, RabbitmqSender rabbitmqSender,
-						  GeminiService geminiService, PromoImageService promoImageService) {
+						  GeminiService geminiService, PromoImageService promoImageService, NotificationService notificationService) {
 		this.vehicleRepository = vehicleRepository;
 		this.documentRepository = documentRepository;
 		this.saleRecordRepository = saleRecordRepository;
@@ -74,6 +76,7 @@ public class VehicleService {
 		this.rabbitmqSender = rabbitmqSender;
 		this.geminiService = geminiService;
 		this.promoImageService = promoImageService;
+		this.notificationService = notificationService;
 	}
 
 	@Transactional(readOnly = true)
@@ -102,26 +105,74 @@ public class VehicleService {
 		return toDetail(getEntity(id), true);
 	}
 
+	// Sync code
 	@Caching(evict = {
 			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
 			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
 	})
-	public VehicleDetailResponse create(VehicleRequest request) {
+	public VehicleDetailResponse createSync(VehicleRequest request) {
 		Vehicle vehicle = new Vehicle();
 		apply(vehicle, request);
 
+		long start = System.nanoTime();
+
+		Vehicle savedVehicle = vehicleRepository.save(vehicle);
+		//sync ai desc gen
+		generateAndSaveAiDescription(savedVehicle.getId());
+
+		//sync notifying subs
+		try {
+			notificationService.notifySubscribers(savedVehicle.getId());
+		} catch (MessagingException e) {
+			throw new RuntimeException(e);
+		}
+
+		long end = System.nanoTime();
+
+		System.out.println(
+				"Total create() time: " +
+						((end - start) / 1_000_000) +
+						" ms"
+		);
+
+		return toDetail(savedVehicle, true);
+	}
+
+	@Caching(evict = {
+			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),
+			@CacheEvict(cacheNames = CacheNames.SALES_REPORTS, allEntries = true)
+	})
+	public VehicleDetailResponse createAsync(VehicleRequest request) {
+		Vehicle vehicle = new Vehicle();
+		apply(vehicle, request);
+
+		long start = System.nanoTime();
+
 		Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
-		boolean shouldGenerateAiDescription = (savedVehicle.getDescription() == null || savedVehicle.getDescription().isBlank());
+		boolean shouldGenerateAiDescription =
+				savedVehicle.getDescription() == null ||
+						savedVehicle.getDescription().isBlank();
+
+		//using rabbit mq for async
 		sendPostCommit(() -> {
 			rabbitmqSender.sendVehicleCreated(savedVehicle.getId());
-
-			if(shouldGenerateAiDescription){
+			if (shouldGenerateAiDescription) {
 				rabbitmqSender.sendGenerateDescription(savedVehicle.getId());
 			}
 		});
+
+		long end = System.nanoTime();
+
+		System.out.println(
+				"Total create() time: " +
+						((end - start) / 1_000_000) +
+						" ms"
+		);
+
 		return toDetail(savedVehicle, true);
 	}
+
 
 	@Caching(evict = {
 			@CacheEvict(cacheNames = CacheNames.VEHICLE_SEARCHES, allEntries = true),

@@ -92,7 +92,7 @@ public class AdminController {
 	@PostMapping("/vehicles")
 	@ResponseStatus(HttpStatus.CREATED)
 	public VehicleDetailResponse createVehicle(@Valid @RequestBody VehicleRequest request) {
-		return vehicleService.create(request);
+		return vehicleService.createAsync(request);
 	}
 
 	@GetMapping("/vehicles/{id}")
