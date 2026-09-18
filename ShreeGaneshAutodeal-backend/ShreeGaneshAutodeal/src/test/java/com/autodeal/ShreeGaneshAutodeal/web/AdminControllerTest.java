@@ -179,7 +179,7 @@ class AdminControllerTest {
 					cat, "https://example.com/mt15.jpg", "Pune", List.of(), List.of(), List.of(),
 					Instant.now(), Instant.now());
 
-			when(vehicleService.create(any(VehicleRequest.class))).thenReturn(response);
+			when(vehicleService.createAsync(any(VehicleRequest.class))).thenReturn(response);
 
 			String requestJson = """
 					{

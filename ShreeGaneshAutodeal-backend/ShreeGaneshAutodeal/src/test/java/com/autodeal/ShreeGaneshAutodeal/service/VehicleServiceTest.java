@@ -260,7 +260,7 @@ class VehicleServiceTest {
 				return v;
 			});
 
-			VehicleDetailResponse response = vehicleService.create(request);
+			VehicleDetailResponse response = vehicleService.createAsync(request);
 
 			assertThat(response).isNotNull();
 			assertThat(response.id()).isEqualTo(200L);
@@ -289,7 +289,7 @@ class VehicleServiceTest {
 				return v;
 			});
 
-			VehicleDetailResponse response = vehicleService.create(request);
+			VehicleDetailResponse response = vehicleService.createAsync(request);
 
 			assertThat(response).isNotNull();
 			assertThat(response.id()).isEqualTo(201L);
