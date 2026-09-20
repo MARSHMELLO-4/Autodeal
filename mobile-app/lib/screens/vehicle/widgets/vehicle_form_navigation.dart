@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 class VehicleFormNavigation extends StatelessWidget {
   const VehicleFormNavigation({
@@ -25,52 +26,46 @@ class VehicleFormNavigation extends StatelessWidget {
     final isFirstStep = currentStep == 0;
     final isLastStep = currentStep == totalSteps - 1;
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Row(
-          children: [
-            if (!isFirstStep)
-              OutlinedButton.icon(
-                onPressed: saving ? null : onBack,
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Back'),
-              ),
-
-            if (!isFirstStep) const Spacer(),
-
-            if (isFirstStep)
-              const Spacer(),
-
-            FilledButton.icon(
-              onPressed: saving
-                  ? null
-                  : isLastStep
-                  ? onSave
-                  : onNext,
-              icon: saving
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xfff2eee6))),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Row(
+            children: [
+              if (!isFirstStep)
+                SizedBox(
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    onPressed: saving ? null : onBack,
+                    icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                    label: const Text('Back'),
+                  ),
                 ),
-              )
-                  : Icon(
-                isLastStep
-                    ? Icons.check
-                    : Icons.arrow_forward,
+              if (!isFirstStep) const SizedBox(width: 12),
+              Expanded(
+                child: BrandButton(
+                  expanded: true,
+                  loading: saving,
+                  label: saving
+                      ? 'Saving…'
+                      : isLastStep
+                          ? 'Add Vehicle'
+                          : 'Next',
+                  icon: saving
+                      ? null
+                      : isLastStep
+                          ? Icons.check_rounded
+                          : Icons.arrow_forward_rounded,
+                  onPressed: saving ? null : isLastStep ? onSave : onNext,
+                ),
               ),
-              label: Text(
-                saving
-                    ? 'Saving...'
-                    : isLastStep
-                    ? 'Add Vehicle'
-                    : 'Next',
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

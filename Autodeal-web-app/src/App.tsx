@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { Bike, MessageCircle, Phone, ArrowUp } from "lucide-react";
+import { Bike, MessageCircle, Phone, ArrowUp, ChevronDown } from "lucide-react";
 
 import { getCategories, getVehicle } from "./api/api-client";
 
@@ -41,6 +41,28 @@ function App() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
   const { vehicles, loading, error: vehicleError } = useVehicles(filters);
+
+  /* -----------------------------------------------------------
+     PAGINATION — show a page of vehicles at a time
+  ----------------------------------------------------------- */
+
+  const PAGE_SIZE = 10;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset to the first page whenever a new filtered set arrives
+  // (React docs pattern: adjust state during render when a prop changes).
+  const [prevVehicles, setPrevVehicles] = useState(vehicles);
+  if (vehicles !== prevVehicles) {
+    setPrevVehicles(vehicles);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  const visibleVehicles = useMemo(
+    () => vehicles.slice(0, visibleCount),
+    [vehicles, visibleCount],
+  );
+
+  const hasMore = visibleCount < vehicles.length;
 
   useInventoryWebSocket(filters, setShowVehicleAddedAlert);
 
@@ -105,7 +127,24 @@ function App() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--paper)] pb-24 sm:pb-0">
+    <main className="relative min-h-screen bg-[var(--paper)] pb-24 sm:pb-0">
+      {/* Animated ambient page background (behind all content) */}
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <div className="ambient-wash" />
+        <div className="orb -right-32 -top-28 h-80 w-80 bg-maroon-100/70 sm:h-[26rem] sm:w-[26rem]" />
+        <div
+          className="orb -left-24 top-1/3 h-72 w-72 bg-red-100/60"
+          style={{ animationDelay: "-6s" } as React.CSSProperties}
+        />
+        <div
+          className="orb bottom-8 left-1/2 h-80 w-80 bg-maroon-50/90"
+          style={{ animationDelay: "-12s" } as React.CSSProperties}
+        />
+      </div>
+
       {showSubscribe && (
         <SubscribeForm onClose={() => setShowSubscribe(false)} />
       )}
@@ -242,18 +281,46 @@ function App() {
 
         {/* =====================================================
             VEHICLE GRID: 2-COLUMN ON MOBILE, RESPONSIVE UPWARDS
+            Paginated — a page of vehicles at a time
         ===================================================== */}
         {!loading && vehicles.length > 0 && (
           <div
             className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
           >
-            {vehicles.map((vehicle) => (
+            {visibleVehicles.map((vehicle) => (
               <VehicleCard
                 key={vehicle.id}
                 vehicle={vehicle}
                 onOpen={openVehicle}
               />
             ))}
+          </div>
+        )}
+
+        {/* Load next set of vehicles */}
+        {!loading && hasMore && (
+          <div className="mt-9 flex flex-col items-center gap-4">
+            <div className="inline-flex items-center gap-3 text-xs font-semibold text-moss">
+              <span className="h-px w-8 bg-hairedge" />
+              <span>
+                {t("showingCount")} {visibleCount} {t("of")} {vehicles.length}{" "}
+                {t("bikesCount")}
+              </span>
+              <span className="h-px w-8 bg-hairedge" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setVisibleCount((current) =>
+                  Math.min(current + PAGE_SIZE, vehicles.length),
+                )
+              }
+              className="btn-spring lift flex items-center gap-2 rounded-full bg-gradient-to-br from-maroon-600 to-maroon-800 px-7 py-3 text-sm font-bold text-white shadow-md shadow-maroon-900/25 cursor-pointer"
+            >
+              <ChevronDown size={17} />
+              {t("loadMore")}
+            </button>
           </div>
         )}
       </section>

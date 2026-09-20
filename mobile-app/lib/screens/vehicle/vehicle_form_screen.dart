@@ -1,15 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
+import 'package:shree_ganesh_autodeal_admin/core/constants/colors.dart';
+import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_draft.dart';
-import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
-import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import 'vehicle_form_state.dart';
 
@@ -679,24 +677,58 @@ class _VehicleFormScreenState
     if (loading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            isEditing
-                ? 'Edit bike'
-                : 'Add Vehicle',
-          ),
+          title: Text(isEditing ? 'Edit bike' : 'Add Vehicle'),
+          backgroundColor: AppColors.paper,
         ),
         body: const Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              SizedBox(height: 14),
+              Text(
+                'Preparing form…',
+                style: TextStyle(color: AppColors.moss, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppColors.paper,
       appBar: AppBar(
-        title: Text(
-          isEditing
-              ? 'Edit bike'
-              : 'Add Vehicle',
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            // Container(
+            //   width: 40,
+            //   height: 40,
+            //   decoration: BoxDecoration(
+            //     gradient: AppColors.brandGradient,
+            //     borderRadius: BorderRadius.circular(13),
+            //   ),
+            //   // child: const Icon(
+            //   //   Icons.directions_bike_rounded,
+            //   //   color: Colors.white,
+            //   //   size: 22,
+            //   // ),
+            // ),
+            const SizedBox(width: 12),
+            Text(
+              isEditing ? 'Edit Bike' : 'Add Vehicle',
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppColors.ink,
+              ),
+            ),
+          ],
         ),
       ),
       body: Column(
@@ -710,7 +742,25 @@ class _VehicleFormScreenState
           Expanded(
             child: Form(
               key: formKey,
-              child: buildCurrentStep(),
+              child: AnimatedSwitcher(
+                duration: AppTheme.durationBase,
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  final offset = Tween<Offset>(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: offset, child: child),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(currentStep),
+                  child: buildCurrentStep(),
+                ),
+              ),
             ),
           ),
 

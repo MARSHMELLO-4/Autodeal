@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-
-import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import '../vehicle_form_state.dart';
 import '../widgets/vehicle_photo_picker.dart';
@@ -32,21 +30,10 @@ class VehiclePhotosStep extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Vehicle Photos',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          'Add clear photos of the vehicle.',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-          ),
+        const FormSectionHeader(
+          icon: Icons.photo_camera_outlined,
+          title: 'Vehicle Photos',
+          subtitle: 'Add clear photos of the vehicle.',
         ),
 
         const SizedBox(height: 24),

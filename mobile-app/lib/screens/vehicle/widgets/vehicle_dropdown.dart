@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/core/constants/colors.dart';
 
 class VehicleDropdown extends StatelessWidget {
   const VehicleDropdown({
@@ -22,15 +23,15 @@ class VehicleDropdown extends StatelessWidget {
         initialValue: value,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(_iconFor(label), size: 20, color: AppColors.maroon600),
         ),
         items: options
             .map(
               (option) => DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          ),
-        )
+                value: option,
+                child: Text(option),
+              ),
+            )
             .toList(),
         onChanged: (value) {
           if (value != null) {
@@ -39,5 +40,11 @@ class VehicleDropdown extends StatelessWidget {
         },
       ),
     );
+  }
+
+  IconData _iconFor(String label) {
+    if (label.contains('Fuel')) return Icons.local_gas_station_outlined;
+    if (label.contains('Status')) return Icons.flag_outlined;
+    return Icons.arrow_drop_down_circle_outlined;
   }
 }

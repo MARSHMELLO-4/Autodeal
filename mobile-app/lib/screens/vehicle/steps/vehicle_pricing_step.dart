@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import '../vehicle_form_state.dart';
 import '../widgets/vehicle_number_field.dart';
@@ -17,21 +18,10 @@ class VehiclePricingStep extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Pricing',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          'Set the selling price and add a description.',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-          ),
+        const FormSectionHeader(
+          icon: Icons.payments_outlined,
+          title: 'Pricing',
+          subtitle: 'Set the selling price and add a description.',
         ),
 
         const SizedBox(height: 24),

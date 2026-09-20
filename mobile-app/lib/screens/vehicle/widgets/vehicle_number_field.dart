@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/core/constants/colors.dart';
 
 class VehicleNumberField extends StatelessWidget {
   const VehicleNumberField({
@@ -23,8 +24,10 @@ class VehicleNumberField extends StatelessWidget {
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
           prefixText: prefixText,
+          prefixIcon: prefixText.isEmpty
+              ? Icon(_iconFor(label), size: 20, color: AppColors.maroon600)
+              : null,
         ),
         validator: (value) {
           if (required &&
@@ -42,5 +45,14 @@ class VehicleNumberField extends StatelessWidget {
         },
       ),
     );
+  }
+
+  IconData _iconFor(String label) {
+    if (label.contains('Manufacture')) return Icons.calendar_month_outlined;
+    if (label.contains('Registration')) return Icons.event_outlined;
+    if (label.contains('Kilometer')) return Icons.speed_rounded;
+    if (label.contains('Owner')) return Icons.person_outline_rounded;
+    if (label.contains('Price')) return Icons.currency_rupee_rounded;
+    return Icons.numbers_rounded;
   }
 }

@@ -50,7 +50,7 @@ const Header = ({ onOpenSubscribe }: HeaderProps) => {
       {/* Scroll progress bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-0.5 bg-transparent">
         <div
-          className="h-full bg-gradient-to-r from-maroon-700 via-maroon-500 to-amber-400 transition-[width] duration-150 ease-out"
+          className="h-full bg-gradient-to-r from-maroon-800 via-maroon-600 to-red-500 transition-[width] duration-150 ease-out"
           style={{ width: `${scrollPct}%` }}
         />
       </div>

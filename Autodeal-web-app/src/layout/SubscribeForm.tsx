@@ -173,7 +173,7 @@ const SubscribeForm = ({ onClose }: SubscribeFormProps) => {
         className="relative w-full max-w-md overflow-hidden rounded-t-3xl bg-white p-6 pb-safe shadow-2xl sm:rounded-3xl sm:p-7 animate-[sheetUp_.34s_cubic-bezier(.2,.9,.3,1)]"
       >
         {/* Top accent gradient bar */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-maroon-700 via-maroon-500 to-amber-400" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-maroon-800 via-maroon-600 to-red-500" aria-hidden="true" />
 
         {/* Mobile drag handle */}
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" />

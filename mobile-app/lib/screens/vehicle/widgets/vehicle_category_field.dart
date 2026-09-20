@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/core/constants/colors.dart';
+import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
 
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 
@@ -26,15 +28,19 @@ class VehicleCategoryField extends StatelessWidget {
             initialValue: value,
             decoration: const InputDecoration(
               labelText: 'Vehicle Category',
-              border: OutlineInputBorder(),
+              prefixIcon: Icon(
+                Icons.category_outlined,
+                size: 20,
+                color: AppColors.maroon600,
+              ),
             ),
             items: categories
                 .map(
                   (category) => DropdownMenuItem<int>(
-                value: category.id,
-                child: Text(category.name),
-              ),
-            )
+                    value: category.id,
+                    child: Text(category.name),
+                  ),
+                )
                 .toList(),
             onChanged: onChanged,
             validator: (value) {
@@ -48,8 +54,17 @@ class VehicleCategoryField extends StatelessWidget {
         const SizedBox(width: 10),
         IconButton.filledTonal(
           onPressed: onCreateCategory,
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add_rounded),
           tooltip: 'Add category',
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.maroon50,
+            foregroundColor: AppColors.maroon700,
+            minimumSize: const Size(50, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              side: const BorderSide(color: AppColors.maroon100),
+            ),
+          ),
         ),
       ],
     );

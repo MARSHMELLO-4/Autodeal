@@ -34,7 +34,7 @@ const VehicleCard = ({ vehicle, onOpen }: VehicleCardProps) => {
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_14px_36px_-26px_rgba(28,25,23,0.35)] ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_54px_-24px_rgba(153,27,27,0.34)] hover:ring-maroon-200/80 active:scale-[0.99]">
       {/* Top gradient accent revealed on hover */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-maroon-700 via-maroon-500 to-amber-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-maroon-800 via-maroon-600 to-red-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         aria-hidden="true"
       />
 

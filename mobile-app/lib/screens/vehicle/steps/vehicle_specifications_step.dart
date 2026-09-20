@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import '../vehicle_form_state.dart';
 import '../widgets/vehicle_dropdown.dart';
@@ -23,21 +24,10 @@ class VehicleSpecificationsStep extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Specifications',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          'Tell us more about this vehicle.',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-          ),
+        const FormSectionHeader(
+          icon: Icons.build_circle_outlined,
+          title: 'Specifications',
+          subtitle: 'Tell us more about this vehicle.',
         ),
 
         const SizedBox(height: 24),

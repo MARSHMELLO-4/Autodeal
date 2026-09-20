@@ -88,7 +88,7 @@ const HeroBanner = () => {
                   <div className="animate-spin-slow absolute inset-0 rounded-full border border-dashed border-maroon-300/60" />
                 </div>
                 <div className="relative inline-flex items-center gap-1.5 rounded-full border border-maroon-200/70 bg-white px-3.5 py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-maroon-700 shadow-sm">
-                  <Sparkles size={13} className="text-amber-500" />
+                  <Sparkles size={13} className="text-maroon-600" />
                   <span>{t("heroHubTag")}</span>
                 </div>
               </div>
@@ -104,7 +104,7 @@ const HeroBanner = () => {
                   {t("heroTitle2")}
                 </span>
                 <span
-                  className="grow-line mt-3 block h-1.5 w-24 rounded-full bg-gradient-to-r from-maroon-600 to-amber-500 sm:w-36"
+                  className="grow-line mt-3 block h-1.5 w-24 rounded-full bg-gradient-to-r from-maroon-700 to-red-500 sm:w-36"
                   style={delay(560)}
                   aria-hidden="true"
                 />
@@ -180,10 +180,10 @@ const HeroBanner = () => {
             </div>
 
             <div
-              className="anim-pop lift flex items-center gap-2 rounded-2xl p-1.5 hover:bg-amber-50/60 sm:gap-2.5 sm:p-2"
+              className="anim-pop lift flex items-center gap-2 rounded-2xl p-1.5 hover:bg-maroon-50/60 sm:gap-2.5 sm:p-2"
               style={delay(920)}
             >
-              <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+              <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-maroon-50 text-maroon-700">
                 <IndianRupee size={17} />
               </div>
               <div>

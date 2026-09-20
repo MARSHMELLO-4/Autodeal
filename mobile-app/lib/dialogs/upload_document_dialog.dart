@@ -1,5 +1,4 @@
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
@@ -58,6 +57,7 @@ Future<void> uploadDocumentFlow(
       },
     );
     if (confirmed != true) return;
+    if (!context.mounted) return;
     String? filePath;
     String? fileName;
 

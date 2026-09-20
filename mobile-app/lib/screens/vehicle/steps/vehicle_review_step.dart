@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 
@@ -29,21 +30,10 @@ class VehicleReviewStep extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Review Vehicle',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          'Review the details before adding the vehicle.',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-          ),
+        const FormSectionHeader(
+          icon: Icons.rate_review_outlined,
+          title: 'Review Vehicle',
+          subtitle: 'Review the details before adding the vehicle.',
         ),
 
         const SizedBox(height: 24),

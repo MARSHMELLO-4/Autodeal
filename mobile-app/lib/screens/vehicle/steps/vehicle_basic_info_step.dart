@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
+import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
 import '../vehicle_form_state.dart';
 import '../widgets/vehicle_category_field.dart';
@@ -28,6 +29,7 @@ class VehicleBasicInfoStep extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _buildHeader(
+          icon: Icons.directions_bike_rounded,
           title: 'Vehicle Information',
           subtitle:
           'Enter the basic details of the vehicle.',
@@ -100,27 +102,14 @@ class VehicleBasicInfoStep extends StatelessWidget {
   }
 
   Widget _buildHeader({
+    required IconData icon,
     required String title,
     required String subtitle,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          subtitle,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
+    return FormSectionHeader(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
     );
   }
 }

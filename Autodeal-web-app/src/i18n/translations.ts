@@ -41,6 +41,11 @@ export interface Translations {
   verifiedInventory: string;
   readyForDelivery: string;
 
+  // Pagination
+  loadMore: string;
+  showingCount: string;
+  of: string;
+
   // Empty State & Errors
   noBikesFound: string;
   noBikesSub: string;
@@ -145,6 +150,11 @@ export const translations: Record<Language, Translations> = {
     verifiedInventory: "Verified Inventory",
     readyForDelivery: "• Inspected & Ready for Delivery",
 
+    // Pagination
+    loadMore: "Load more bikes",
+    showingCount: "Showing",
+    of: "of",
+
     // Empty State & Errors
     noBikesFound: "No motorcycles found",
     noBikesSub: "Try adjusting your search terms or select another category above.",
@@ -246,6 +256,11 @@ export const translations: Record<Language, Translations> = {
     bikesCount: "बाइक्स",
     verifiedInventory: "सत्यापित इन्वेंटरी",
     readyForDelivery: "• पूरी तरह जांची गई और तैयार",
+
+    // Pagination
+    loadMore: "और बाइक्स देखें",
+    showingCount: "दिखाई जा रही",
+    of: "में से",
 
     // Empty State & Errors
     noBikesFound: "कोई मोटरसाइकिल नहीं मिली",
