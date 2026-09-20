@@ -168,7 +168,7 @@ body {
 }
 
 .animate-pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
+  animation: pulseGlow 7s ease-in-out infinite;
 }
 
 /* ---------- Entrance keyframes (above-the-fold) ---------- */
@@ -698,14 +698,24 @@ html.js-anim .reveal-stagger.is-visible > :nth-child(n + 13) {
 }
 
 /* Pulsing halo behind accent buttons (needs isolation: isolate) */
+/* Subtle pulsing halo for CTA buttons */
 @keyframes pulseRing {
   0% {
     transform: scale(1);
-    opacity: 0.4;
+    opacity: 0;
   }
-  70%,
+
+  10% {
+    opacity: 0.25;
+  }
+
+  45% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+
   100% {
-    transform: scale(1.6);
+    transform: scale(1.12);
     opacity: 0;
   }
 }
@@ -721,8 +731,9 @@ html.js-anim .reveal-stagger.is-visible > :nth-child(n + 13) {
   inset: 0;
   border-radius: inherit;
   background: currentColor;
+  pointer-events: none;
   z-index: -1;
-  animation: pulseRing 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: pulseRing 3.5s ease-out infinite;
 }
 
 /* Soft pinging dot for live/available markers */
