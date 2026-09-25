@@ -1,7 +1,12 @@
-import { Search, X, RotateCcw, Check } from "lucide-react";
+import { Search, X, RotateCcw, Check, ArrowUpDown } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { filterModel } from "../models/fIltersModels";
 import type { categoryModel } from "../models/categoryModel";
+import {
+  DEFAULT_VEHICLE_SORT,
+  VEHICLE_SORT_OPTIONS,
+  type VehicleSortOption,
+} from "../models/vehicleSort";
 import { useLanguage } from "../i18n/useLanguage";
 import type { Translations } from "../i18n/translations";
 
@@ -27,16 +32,19 @@ const FilterPanel = ({
   setFilters,
 }: FilterPanelProps) => {
   const { t } = useLanguage();
+  const activeSort: VehicleSortOption = filters.sort ?? DEFAULT_VEHICLE_SORT;
   const isFiltered =
     filters.search !== "" ||
     filters.category !== "" ||
-    filters.status !== "AVAILABLE";
+    filters.status !== "AVAILABLE" ||
+    activeSort !== DEFAULT_VEHICLE_SORT;
 
   const clearFilters = () => {
     setFilters({
       search: "",
       category: "",
       status: "AVAILABLE",
+      sort: DEFAULT_VEHICLE_SORT,
     });
   };
 
@@ -90,6 +98,53 @@ const FilterPanel = ({
             <RotateCcw size={16} />
           </button>
         )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex flex-1 items-center rounded-2xl border border-hairedge bg-white px-4 py-2.5 shadow-xs transition-all duration-200 focus-within:border-maroon-300 focus-within:ring-4 focus-within:ring-maroon-50">
+          <ArrowUpDown
+            className="mr-2 shrink-0 text-moss"
+            size={16}
+            aria-hidden="true"
+          />
+
+          <label htmlFor="vehicle-sort" className="sr-only">
+            {t("sortBy")}
+          </label>
+
+          <select
+            id="vehicle-sort"
+            value={activeSort}
+            onChange={(event) =>
+              setFilters((current) => ({
+                ...current,
+                sort: event.target.value as VehicleSortOption,
+              }))
+            }
+            className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-xs font-bold text-ink outline-none sm:text-sm"
+          >
+            {VEHICLE_SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {t(option.labelKey)}
+              </option>
+            ))}
+          </select>
+
+          <span
+            className="pointer-events-none absolute right-4 text-moss"
+            aria-hidden="true"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9l6 6 6-6"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
       </div>
 
       {/* Segmented Status Control (thumb-friendly) */}

@@ -7,8 +7,16 @@ class VehicleService {
 
   final ApiClient _api;
 
-  Future<List<Vehicle>> getVehicles({String? search, String? status}) {
-    return _api.getVehicles(search: search, status: status);
+  Future<List<Vehicle>> getVehicles({
+    String? search,
+    String? status,
+    String? sortBy,
+  }) {
+    return _api.getVehicles(
+      search: search,
+      status: status,
+      sortBy: sortBy,
+    );
   }
 
   Future<Vehicle> getVehicle(int id) => _api.getVehicle(id);

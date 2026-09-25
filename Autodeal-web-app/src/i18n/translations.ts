@@ -41,6 +41,18 @@ export interface Translations {
   verifiedInventory: string;
   readyForDelivery: string;
 
+  // Sorting
+  sortBy: string;
+  sortNewest: string;
+  sortOldest: string;
+  sortPriceLow: string;
+  sortPriceHigh: string;
+  sortYearNew: string;
+  sortYearOld: string;
+  sortMileageLow: string;
+  sortMileageHigh: string;
+  sortTitleAZ: string;
+
   // Pagination
   loadMore: string;
   showingCount: string;
@@ -150,6 +162,18 @@ export const translations: Record<Language, Translations> = {
     verifiedInventory: "Verified Inventory",
     readyForDelivery: "• Inspected & Ready for Delivery",
 
+    // Sorting
+    sortBy: "Sort by",
+    sortNewest: "Newest first",
+    sortOldest: "Oldest first",
+    sortPriceLow: "Price: low to high",
+    sortPriceHigh: "Price: high to low",
+    sortYearNew: "Year: new to old",
+    sortYearOld: "Year: old to new",
+    sortMileageLow: "Mileage: lowest first",
+    sortMileageHigh: "Mileage: highest first",
+    sortTitleAZ: "Name: A to Z",
+
     // Pagination
     loadMore: "Load more bikes",
     showingCount: "Showing",
@@ -256,6 +280,18 @@ export const translations: Record<Language, Translations> = {
     bikesCount: "बाइक्स",
     verifiedInventory: "सत्यापित इन्वेंटरी",
     readyForDelivery: "• पूरी तरह जांची गई और तैयार",
+
+    // Sorting
+    sortBy: "क्रम",
+    sortNewest: "नए पहले",
+    sortOldest: "पुराने पहले",
+    sortPriceLow: "कीमत: कम से ज्यादा",
+    sortPriceHigh: "कीमत: ज्यादा से कम",
+    sortYearNew: "साल: नए से पुराने",
+    sortYearOld: "साल: पुराने से नए",
+    sortMileageLow: "किलोमीटर: कम पहले",
+    sortMileageHigh: "किलोमीटर: ज्यादा पहले",
+    sortTitleAZ: "नाम: A से Z",
 
     // Pagination
     loadMore: "और बाइक्स देखें",

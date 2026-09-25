@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -20,15 +21,19 @@ import com.autodeal.ShreeGaneshAutodeal.domain.VehicleStatus;
 import com.autodeal.ShreeGaneshAutodeal.dto.AiShareResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.CategoryResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.RegionClickResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.SaleRecordResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.SalesReportResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.VehicleClickReportResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.VehicleClickSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDetailResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDocumentResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.service.CategoryService;
+import com.autodeal.ShreeGaneshAutodeal.service.VehicleClickService;
 import com.autodeal.ShreeGaneshAutodeal.service.VehicleService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -39,11 +44,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -58,6 +67,12 @@ class AdminControllerTest {
 
 	@Mock
 	private VehicleService vehicleService;
+
+	@Mock
+	private VehicleClickService vehicleClickService;
+
+	@Mock
+	private RedisConnectionFactory redisConnectionFactory;
 
 	@InjectMocks
 	private AdminController adminController;
@@ -281,6 +296,73 @@ class AdminControllerTest {
 					.andExpect(status().isNoContent());
 
 			verify(vehicleService).delete(15L);
+		}
+
+		@Test
+		@DisplayName("GET /api/admin/vehicles should apply sortBy whitelist")
+		void shouldApplySortBy() throws Exception {
+			when(vehicleService.search(any(), any(), any(), any(), any(), any()))
+					.thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 40), 0));
+
+			mockMvc.perform(get("/api/admin/vehicles")
+							.param("sortBy", "mileageLow"))
+					.andExpect(status().isOk());
+
+			ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+			verify(vehicleService).search(any(), any(), any(), any(), any(), captor.capture());
+
+			Sort.Order order = captor.getValue().getSort().getOrderFor("kilometersDriven");
+			org.assertj.core.api.Assertions.assertThat(order).isNotNull();
+			org.assertj.core.api.Assertions.assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
+		}
+	}
+
+	@Nested
+	@DisplayName("Click Analytics Endpoints")
+	class ClickAnalyticsEndpoints {
+
+		@Test
+		@DisplayName("GET /api/admin/analytics/clicks should return site wide click report")
+		void shouldReturnSiteWideClickReport() throws Exception {
+			VehicleClickReportResponse report = new VehicleClickReportResponse(
+					null,
+					120,
+					45,
+					List.of(new RegionClickResponse("Maharashtra", "IN", 80, 30)),
+					List.of(new VehicleClickSummaryResponse(
+							15L, "Yamaha MT-15", 40, 22, Instant.now())),
+					Instant.now());
+
+			when(vehicleClickService.report(isNull(), eq(LocalDate.of(2026, 8, 1)), eq(LocalDate.of(2026, 8, 31))))
+					.thenReturn(report);
+
+			mockMvc.perform(get("/api/admin/analytics/clicks")
+							.param("from", "2026-08-01")
+							.param("to", "2026-08-31"))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.totalClicks", is(120)))
+					.andExpect(jsonPath("$.uniqueVisitors", is(45)))
+					.andExpect(jsonPath("$.regions[0].region", is("Maharashtra")))
+					.andExpect(jsonPath("$.topVehicles[0].vehicleId", is(15)));
+		}
+
+		@Test
+		@DisplayName("GET /api/admin/analytics/vehicles/{id}/clicks should return per vehicle report")
+		void shouldReturnVehicleClickReport() throws Exception {
+			VehicleClickReportResponse report = new VehicleClickReportResponse(
+					15L,
+					12,
+					7,
+					List.of(new RegionClickResponse("Pune", "IN", 12, 7)),
+					List.of(new VehicleClickSummaryResponse(15L, "Yamaha MT-15", 12, 7, Instant.now())),
+					Instant.now());
+
+			when(vehicleClickService.report(eq(15L), any(), any())).thenReturn(report);
+
+			mockMvc.perform(get("/api/admin/analytics/vehicles/15/clicks"))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.scopeVehicleId", is(15)))
+					.andExpect(jsonPath("$.totalClicks", is(12)));
 		}
 	}
 

@@ -1,10 +1,14 @@
 import { useEffect, useRef } from "react";
-import { getVehicle } from "../api/api-client";
+import { getVehicle, getVehicles } from "../api/api-client";
 import { connectInventoryWebSocket } from "../api/websockets/connect-ws";
 import type { filterModel } from "../models/fIltersModels";
-import type { VehicleModel } from "../models/vehicleModel";
+import { DEFAULT_VEHICLE_SORT } from "../models/vehicleSort";
 import { useAppDispatch } from "../store/hooks";
-import { vehicleRemoved, vehicleUpserted } from "../store/vehiclesSlice";
+import {
+  vehicleRemoved,
+  vehiclesReceived,
+  vehicleUpserted,
+} from "../store/vehiclesSlice";
 import { vehicleMatchesFilters } from "../utils/vehicleFilters";
 
 export function useInventoryWebSocket(filters: filterModel, 
@@ -28,9 +32,20 @@ export function useInventoryWebSocket(filters: filterModel,
         setShowVehicleAddedAlert(true);
       }
 
+      const activeFilters = filtersRef.current;
+
+      if ((activeFilters.sort ?? DEFAULT_VEHICLE_SORT) !== DEFAULT_VEHICLE_SORT) {
+        getVehicles(activeFilters)
+          .then((res) => dispatch(vehiclesReceived(res.content || [])))
+          .catch((error) => {
+            console.error("Failed to refresh vehicles from inventory event:", error);
+          });
+        return;
+      }
+
       getVehicle(String(event.id))
-        .then((vehicle: VehicleModel) => {
-          if (vehicleMatchesFilters(vehicle, filtersRef.current)) {
+        .then((vehicle) => {
+          if (vehicleMatchesFilters(vehicle, activeFilters)) {
             dispatch(vehicleUpserted(vehicle));
           } else {
             dispatch(vehicleRemoved(vehicle.id));

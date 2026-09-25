@@ -7,6 +7,8 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.service.CategoryService;
 import com.autodeal.ShreeGaneshAutodeal.service.NotificationService;
 import com.autodeal.ShreeGaneshAutodeal.service.VehicleService;
+import com.autodeal.ShreeGaneshAutodeal.service.VehicleSort;
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,8 +46,10 @@ public class CatalogController {
 			@RequestParam(required = false) VehicleStatus status,
 			@RequestParam(required = false) BigDecimal minPrice,
 			@RequestParam(required = false) BigDecimal maxPrice,
+			@RequestParam(required = false) String sortBy,
 			@PageableDefault(size = 24) Pageable pageable) {
-		return vehicleService.search(search, category, status, minPrice, maxPrice, pageable);
+		return vehicleService.search(
+				search, category, status, minPrice, maxPrice, VehicleSort.apply(pageable, sortBy));
 	}
 
 	@GetMapping("/vehicles/{id}")

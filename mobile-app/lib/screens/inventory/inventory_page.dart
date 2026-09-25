@@ -20,11 +20,24 @@ class InventoryPage extends StatefulWidget {
 class _InventoryPageState extends State<InventoryPage> {
   final searchController = TextEditingController();
   String status = 'AVAILABLE';
+  String sortBy = _sortOptions.first.value;
   bool loading = true;
   String? error;
   List<Vehicle> vehicles = [];
 
   static const _statuses = ['AVAILABLE', 'RESERVED', 'SOLD', 'ALL'];
+
+  static const _sortOptions = <_SortOption>[
+    _SortOption('newest', 'Newest first', Icons.new_releases_outlined),
+    _SortOption('oldest', 'Oldest first', Icons.history_rounded),
+    _SortOption('priceLow', 'Price: low to high', Icons.south_rounded),
+    _SortOption('priceHigh', 'Price: high to low', Icons.north_rounded),
+    _SortOption('yearNew', 'Year: new to old', Icons.event_available_rounded),
+    _SortOption('yearOld', 'Year: old to new', Icons.event_busy_rounded),
+    _SortOption('mileageLow', 'Mileage: lowest', Icons.speed_rounded),
+    _SortOption('mileageHigh', 'Mileage: highest', Icons.trending_up_rounded),
+    _SortOption('titleAZ', 'Name: A to Z', Icons.sort_by_alpha_rounded),
+  ];
 
   @override
   void initState() {
@@ -48,6 +61,7 @@ class _InventoryPageState extends State<InventoryPage> {
       vehicles = await widget.api.getVehicles(
         search: searchController.text,
         status: status,
+        sortBy: sortBy,
       );
     } catch (err) {
       error = err.toString();
@@ -58,6 +72,12 @@ class _InventoryPageState extends State<InventoryPage> {
   void _selectStatus(String value) {
     if (status == value) return;
     setState(() => status = value);
+    load();
+  }
+
+  void _selectSort(String value) {
+    if (sortBy == value) return;
+    setState(() => sortBy = value);
     load();
   }
 
@@ -82,6 +102,10 @@ class _InventoryPageState extends State<InventoryPage> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
             sliver: SliverToBoxAdapter(child: _buildStatusFilter()),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+            sliver: SliverToBoxAdapter(child: _buildSortFilter()),
           ),
           ..._buildBody(),
         ],
@@ -236,6 +260,84 @@ class _InventoryPageState extends State<InventoryPage> {
     );
   }
 
+  Widget _buildSortFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.swap_vert_rounded,
+              size: 16,
+              color: AppColors.moss,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Sort by',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.moss,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: _sortOptions.map((option) {
+              final active = sortBy == option.value;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Material(
+                  color: active ? AppColors.maroon700 : Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  child: InkWell(
+                    onTap: () => _selectSort(option.value),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        border: Border.all(
+                          color: active ? AppColors.maroon700 : AppColors.hairedge,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            option.icon,
+                            size: 15,
+                            color: active ? Colors.white : AppColors.moss,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            option.label,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: active ? Colors.white : AppColors.ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   List<Widget> _buildBody() {
     if (loading) return [_buildSkeleton()];
     if (error != null) {
@@ -256,6 +358,7 @@ class _InventoryPageState extends State<InventoryPage> {
                     onPressed: () {
                       searchController.clear();
                       status = 'ALL';
+                      sortBy = _sortOptions.first.value;
                       load();
                     },
                     label: 'Reset filters',
@@ -310,6 +413,14 @@ class _InventoryPageState extends State<InventoryPage> {
       ),
     );
   }
+}
+
+class _SortOption {
+  const _SortOption(this.value, this.label, this.icon);
+
+  final String value;
+  final String label;
+  final IconData icon;
 }
 
 /// Lightweight staggered entrance so the list doesn't feel abrupt.

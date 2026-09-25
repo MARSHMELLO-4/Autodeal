@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { getVehicle } from "../api/api-client";
+import type { SingleVehicleModel } from "../models/singleVehicleModel";
 
 export function useVehicle(id: string) {
-    const [vehicle, setVehicle] = useState<unknown>(undefined);
+    const [vehicle, setVehicle] = useState<SingleVehicleModel | undefined>(undefined);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
@@ -10,7 +11,7 @@ export function useVehicle(id: string) {
 
         getVehicle(id)
             .then((res) => {
-                if (active) setVehicle(res.content);
+                if (active) setVehicle(res);
             })
             .catch((err) => {
                 if (active) {

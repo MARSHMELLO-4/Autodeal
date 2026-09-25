@@ -33,6 +33,7 @@ class ApiClient {
   Future<List<Vehicle>> getVehicles({
     String? search,
     String? status,
+    String? sortBy,
   }) async {
     try {
       final params = <String, String>{
@@ -46,6 +47,10 @@ class ApiClient {
 
       if (status != null && status != 'ALL') {
         params['status'] = status;
+      }
+
+      if (sortBy != null && sortBy.trim().isNotEmpty) {
+        params['sortBy'] = sortBy.trim();
       }
 
       final json = await _get(

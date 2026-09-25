@@ -85,8 +85,10 @@ public class AdminController {
 			@RequestParam(required = false) VehicleStatus status,
 			@RequestParam(required = false) BigDecimal minPrice,
 			@RequestParam(required = false) BigDecimal maxPrice,
+			@RequestParam(required = false) String sortBy,
 			@PageableDefault(size = 40) Pageable pageable) {
-		return vehicleService.search(search, category, status, minPrice, maxPrice, pageable);
+		return vehicleService.search(
+				search, category, status, minPrice, maxPrice, VehicleSort.apply(pageable, sortBy));
 	}
 
 	@PostMapping("/vehicles")

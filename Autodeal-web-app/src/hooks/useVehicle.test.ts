@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useVehicle } from "./useVehicle";
 import * as apiClient from "../api/api-client";
+import { buildSingleVehicle } from "../test/vehicleFixtures";
 
 describe("useVehicle hook", () => {
   beforeEach(() => {
@@ -9,11 +10,9 @@ describe("useVehicle hook", () => {
   });
 
   it("should fetch single vehicle and manage loading state", async () => {
-    const mockVehicle = { id: 10, title: "Royal Enfield 350", price: 180000 };
+    const mockVehicle = buildSingleVehicle();
 
-    vi.spyOn(apiClient, "getVehicle").mockResolvedValue({
-      content: mockVehicle,
-    } );
+    vi.spyOn(apiClient, "getVehicle").mockResolvedValue(mockVehicle);
 
     const { result } = renderHook(() => useVehicle("10"));
 
@@ -27,17 +26,13 @@ describe("useVehicle hook", () => {
   });
 
   it("should refetch vehicle when id changes", async () => {
-    const mockVehicle1 = { id: 10, title: "Royal Enfield 350" };
-    const mockVehicle2 = { id: 20, title: "Honda CB350" };
+    const mockVehicle1 = buildSingleVehicle({ id: 10, title: "Royal Enfield 350" });
+    const mockVehicle2 = buildSingleVehicle({ id: 20, title: "Honda CB350" });
 
     const getVehicleSpy = vi
       .spyOn(apiClient, "getVehicle")
-      .mockResolvedValueOnce({
-        content: mockVehicle1,
-      } )
-      .mockResolvedValueOnce({
-        content: mockVehicle2,
-      } );
+      .mockResolvedValueOnce(mockVehicle1)
+      .mockResolvedValueOnce(mockVehicle2);
 
     const { result, rerender } = renderHook(
       ({ id }) => useVehicle(id),
@@ -81,11 +76,9 @@ describe("useVehicle hook", () => {
   });
 
   it("should set loading to false after successful fetch", async () => {
-    const mockVehicle = { id: 10, title: "Yamaha MT-15" };
+    const mockVehicle = buildSingleVehicle({ id: 10, title: "Yamaha MT-15" });
 
-    vi.spyOn(apiClient, "getVehicle").mockResolvedValue({
-      content: mockVehicle,
-    } );
+    vi.spyOn(apiClient, "getVehicle").mockResolvedValue(mockVehicle);
 
     const { result } = renderHook(() => useVehicle("10"));
 

@@ -15,6 +15,7 @@ import WhyUs from "./layout/Footer";
 import type { categoryModel } from "./models/categoryModel";
 import type { filterModel } from "./models/fIltersModels";
 import type { SingleVehicleModel } from "./models/singleVehicleModel";
+import { DEFAULT_VEHICLE_SORT } from "./models/vehicleSort";
 import SubscribeForm from "./layout/SubscribeForm";
 import { useVehicles } from "./hooks/useVehicles";
 import { useInventoryWebSocket } from "./hooks/useInventoryWebSocket";
@@ -36,6 +37,7 @@ function App() {
     search: "",
     category: "",
     status: "AVAILABLE",
+    sort: DEFAULT_VEHICLE_SORT,
   });
 
   const [detailLoading, setDetailLoading] = useState(false);
@@ -270,6 +272,7 @@ function App() {
                   search: "",
                   category: "",
                   status: "AVAILABLE",
+                  sort: DEFAULT_VEHICLE_SORT,
                 })
               }
               className="btn-spring mt-5 rounded-xl bg-gradient-to-br from-maroon-600 to-maroon-800 px-5 py-3 text-sm font-bold text-white shadow-md shadow-maroon-900/20 cursor-pointer"

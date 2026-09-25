@@ -7,6 +7,17 @@ import * as apiClient from "../api/api-client";
 import { store } from "../store/store";
 import { vehiclesReceived } from "../store/vehiclesSlice";
 import type { filterModel } from "../models/fIltersModels";
+import { buildVehicle } from "../test/vehicleFixtures";
+
+function page<T>(content: T[]) {
+  return {
+    content,
+    totalElements: content.length,
+    totalPages: 1,
+    number: 0,
+    size: 60,
+  };
+}
 
 function wrapper({ children }: PropsWithChildren) {
   return createElement(Provider, { store, children });
@@ -20,13 +31,11 @@ describe("useVehicles hook", () => {
 
   it("should fetch vehicles and manage loading state", async () => {
     const mockVehicles = [
-      { id: 1, title: "Honda Activa 6G", price: 75000 },
-      { id: 2, title: "Royal Enfield 350", price: 180000 },
+      buildVehicle({ id: 1, title: "Honda Activa 6G", price: 75000 }),
+      buildVehicle({ id: 2, title: "Royal Enfield 350", price: 180000 }),
     ];
 
-    vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
-      content: mockVehicles,
-    } );
+    vi.spyOn(apiClient, "getVehicles").mockResolvedValue(page(mockVehicles));
 
     const filters: filterModel = { search: "", category: "", status: "AVAILABLE" };
     const { result } = renderHook(() => useVehicles(filters), { wrapper });
@@ -42,20 +51,16 @@ describe("useVehicles hook", () => {
 
   it("should refetch vehicles when filters change", async () => {
     const mockVehicles1 = [
-      { id: 1, title: "Honda Activa 6G", price: 75000 },
+      buildVehicle({ id: 1, title: "Honda Activa 6G", price: 75000 }),
     ];
     const mockVehicles2 = [
-      { id: 2, title: "Royal Enfield 350", price: 180000 },
+      buildVehicle({ id: 2, title: "Royal Enfield 350", price: 180000 }),
     ];
 
     const getVehiclesSpy = vi
       .spyOn(apiClient, "getVehicles")
-      .mockResolvedValueOnce({
-        content: mockVehicles1,
-      } )
-      .mockResolvedValueOnce({
-        content: mockVehicles2,
-      } );
+      .mockResolvedValueOnce(page(mockVehicles1))
+      .mockResolvedValueOnce(page(mockVehicles2));
 
     const { result, rerender } = renderHook(
       ({ filters }) => useVehicles(filters),
@@ -94,10 +99,32 @@ describe("useVehicles hook", () => {
     expect(getVehiclesSpy).toHaveBeenCalledTimes(2);
   });
 
+  it("should forward the selected sort to the api", async () => {
+    const getVehiclesSpy = vi
+      .spyOn(apiClient, "getVehicles")
+      .mockResolvedValue(page([buildVehicle()]));
+
+    const filters: filterModel = {
+      search: "",
+      category: "",
+      status: "AVAILABLE",
+      sort: "priceLow",
+    };
+
+    renderHook(() => useVehicles(filters), { wrapper });
+
+    await waitFor(() => {
+      expect(getVehiclesSpy).toHaveBeenCalledWith({
+        search: "",
+        category: "",
+        status: "AVAILABLE",
+        sort: "priceLow",
+      });
+    });
+  });
+
   it("should handle empty vehicle list", async () => {
-    vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
-      content: [],
-    } );
+    vi.spyOn(apiClient, "getVehicles").mockResolvedValue(page([]));
 
     const filters: filterModel = {
       search: "nonexistent",
@@ -134,13 +161,9 @@ describe("useVehicles hook", () => {
   });
 
   it("should apply search filter correctly", async () => {
-    const mockVehicles = [
-      { id: 1, title: "Honda Activa 6G", price: 75000 },
-    ];
-
-    const getVehiclesSpy = vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
-      content: mockVehicles,
-    } );
+    const getVehiclesSpy = vi
+      .spyOn(apiClient, "getVehicles")
+      .mockResolvedValue(page([buildVehicle()]));
 
     const filters: filterModel = {
       search: "Activa",
@@ -159,13 +182,9 @@ describe("useVehicles hook", () => {
   });
 
   it("should apply category filter correctly", async () => {
-    const mockVehicles = [
-      { id: 1, title: "Honda Activa 6G", price: 75000 },
-    ];
-
-    const getVehiclesSpy = vi.spyOn(apiClient, "getVehicles").mockResolvedValue({
-      content: mockVehicles,
-    } );
+    const getVehiclesSpy = vi
+      .spyOn(apiClient, "getVehicles")
+      .mockResolvedValue(page([buildVehicle()]));
 
     const filters: filterModel = {
       search: "",
