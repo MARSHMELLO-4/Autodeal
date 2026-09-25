@@ -6,6 +6,7 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDetailResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
 import com.autodeal.ShreeGaneshAutodeal.service.CategoryService;
 import com.autodeal.ShreeGaneshAutodeal.service.NotificationService;
+import com.autodeal.ShreeGaneshAutodeal.service.VehicleClickService;
 import com.autodeal.ShreeGaneshAutodeal.service.VehicleService;
 import com.autodeal.ShreeGaneshAutodeal.service.VehicleSort;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,11 +28,14 @@ public class CatalogController {
 	private final CategoryService categoryService;
 	private final VehicleService vehicleService;
 	private final NotificationService notificationService;
+	private final VehicleClickService vehicleClickService;
 
-	public CatalogController(CategoryService categoryService, VehicleService vehicleService, NotificationService notificationService) {
+	public CatalogController(CategoryService categoryService, VehicleService vehicleService,
+			NotificationService notificationService, VehicleClickService vehicleClickService) {
 		this.categoryService = categoryService;
 		this.vehicleService = vehicleService;
 		this.notificationService = notificationService;
+		this.vehicleClickService = vehicleClickService;
 	}
 
 	@GetMapping("/categories")
@@ -55,6 +59,15 @@ public class CatalogController {
 	@GetMapping("/vehicles/{id}")
 	public VehicleDetailResponse vehicle(@PathVariable Long id) {
 		return vehicleService.getPublicDetail(id);
+	}
+
+	@PostMapping("/vehicles/{id}/clicks")
+	public ResponseEntity<Void> trackClick(
+			@PathVariable Long id,
+			@RequestParam(required = false) String source,
+			HttpServletRequest request) {
+		vehicleClickService.recordClick(id, source, request);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 	}
 
 	@PostMapping("/vehicles/sendTestNotification/{id}")

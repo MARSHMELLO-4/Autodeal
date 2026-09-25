@@ -7,6 +7,7 @@ import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/models/category.dart';
 import 'package:shree_ganesh_autodeal_admin/models/sales_report.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle.dart';
+import 'package:shree_ganesh_autodeal_admin/models/vehicle_click_report.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_draft.dart';
 import 'package:shree_ganesh_autodeal_admin/models/vehicle_image.dart';
 import 'package:http_parser/http_parser.dart';
@@ -336,6 +337,39 @@ class ApiClient {
       throw _handleException(
         e,
         'Unable to fetch sales report',
+      );
+    }
+  }
+
+  Future<VehicleClickReport> getClickReport({
+    DateTime? from,
+    DateTime? to,
+    int? vehicleId,
+  }) async {
+    try {
+      final params = <String, String>{};
+
+      if (from != null) {
+        params['from'] = DateFormat('yyyy-MM-dd').format(from);
+      }
+
+      if (to != null) {
+        params['to'] = DateFormat('yyyy-MM-dd').format(to);
+      }
+
+      final query = params.isEmpty ? '' : '?${Uri(queryParameters: params).query}';
+
+      final path = vehicleId == null
+          ? '/api/admin/analytics/clicks$query'
+          : '/api/admin/analytics/vehicles/$vehicleId/clicks$query';
+
+      final json = await _get(path);
+
+      return VehicleClickReport.fromJson(asJsonMap(json));
+    } catch (e) {
+      throw _handleException(
+        e,
+        'Unable to fetch click report',
       );
     }
   }

@@ -61,7 +61,25 @@ create table if not exists sale_records (
   created_at timestamptz not null default now()
 );
 
+create table if not exists vehicle_clicks (
+  id bigserial primary key,
+  vehicle_id bigint not null references vehicles(id) on delete cascade,
+  ip_hash varchar(64) not null,
+  country varchar(80),
+  region varchar(120),
+  city varchar(120),
+  user_agent varchar(512),
+  referrer varchar(1000),
+  source varchar(40) not null default 'unknown',
+  clicked_at timestamptz not null default now()
+);
+
 create index if not exists idx_vehicles_status on vehicles(status);
 create index if not exists idx_vehicles_category on vehicles(category_id);
 create index if not exists idx_vehicles_brand_model on vehicles(brand, model_name);
+create index if not exists idx_vehicles_created_at on vehicles(created_at);
+create index if not exists idx_vehicles_price on vehicles(price);
 create index if not exists idx_sale_records_sale_date on sale_records(sale_date);
+create index if not exists idx_vehicle_clicks_vehicle on vehicle_clicks(vehicle_id);
+create index if not exists idx_vehicle_clicks_clicked_at on vehicle_clicks(clicked_at);
+create index if not exists idx_vehicle_clicks_region on vehicle_clicks(region);

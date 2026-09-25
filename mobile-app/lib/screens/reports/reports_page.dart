@@ -4,6 +4,7 @@ import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
 import 'package:shree_ganesh_autodeal_admin/core/utils/formatters.dart';
 import 'package:shree_ganesh_autodeal_admin/models/sales_report.dart';
 import 'package:shree_ganesh_autodeal_admin/models/sale_row.dart';
+import 'package:shree_ganesh_autodeal_admin/models/vehicle_click_report.dart';
 import 'package:shree_ganesh_autodeal_admin/services/api_client.dart';
 import 'package:shree_ganesh_autodeal_admin/widgets/common_widgets.dart';
 
@@ -18,15 +19,20 @@ class ReportsPage extends StatefulWidget {
 
 class _ReportsPageState extends State<ReportsPage> {
   late Future<SalesReport> reportFuture;
+  late Future<VehicleClickReport> clicksFuture;
 
   @override
   void initState() {
     super.initState();
     reportFuture = widget.api.getSalesReport();
+    clicksFuture = widget.api.getClickReport();
   }
 
   void refresh() {
-    setState(() => reportFuture = widget.api.getSalesReport());
+    setState(() {
+      reportFuture = widget.api.getSalesReport();
+      clicksFuture = widget.api.getClickReport();
+    });
   }
 
   @override
@@ -146,6 +152,34 @@ class _ReportsPageState extends State<ReportsPage> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: _SaleTile(sale: sale),
                 ),
+              const SizedBox(height: 24),
+              FutureBuilder<VehicleClickReport>(
+                future: clicksFuture,
+                builder: (context, clicksSnapshot) {
+                  if (clicksSnapshot.connectionState != ConnectionState.done) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 28),
+                      child: Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(strokeWidth: 3),
+                        ),
+                      ),
+                    );
+                  }
+                  if (clicksSnapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: ErrorPanel(
+                        message: clicksSnapshot.error.toString(),
+                        onRetry: refresh,
+                      ),
+                    );
+                  }
+                  return _ClickSection(report: clicksSnapshot.data!);
+                },
+              ),
             ],
           ),
         );
@@ -268,6 +302,218 @@ class SalesMetricCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ClickSection extends StatelessWidget {
+  const _ClickSection({required this.report});
+
+  final VehicleClickReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxClicks = report.regions.isEmpty
+        ? 0
+        : report.regions
+            .map((region) => region.clickCount)
+            .reduce((a, b) => a > b ? a : b);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Interest',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontSize: 18),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: AppColors.maroon400,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.45,
+          children: [
+            SalesMetricCard(
+              label: 'Total Clicks',
+              value: '${report.totalClicks}',
+              icon: Icons.touch_app_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xff7c3aed), Color(0xff6d28d9)],
+              ),
+            ),
+            SalesMetricCard(
+              label: 'Unique Visitors',
+              value: '${report.uniqueVisitors}',
+              icon: Icons.group_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xff0ea5e9), Color(0xff0369a1)],
+              ),
+            ),
+          ],
+        ),
+        if (report.regions.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text(
+            'Top regions',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800, fontSize: 15),
+          ),
+          const SizedBox(height: 10),
+          for (final region in report.regions.take(6))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  border: Border.all(color: AppColors.hairedge),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            region.region == 'Unknown'
+                                ? 'Unknown'
+                                : region.region,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${region.clickCount} clicks',
+                          style: const TextStyle(
+                            color: AppColors.maroon700,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                      child: LinearProgressIndicator(
+                        value: maxClicks == 0
+                            ? 0
+                            : region.clickCount / maxClicks,
+                        minHeight: 7,
+                        backgroundColor: AppColors.maroon50,
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.maroon400,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${region.uniqueVisitors} unique visitors'
+                      '${region.country == 'Unknown' ? '' : ' • ${region.country}'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.moss,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+        if (report.topVehicles.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text(
+            'Most viewed vehicles',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w800, fontSize: 15),
+          ),
+          const SizedBox(height: 10),
+          for (final vehicle in report.topVehicles.take(8))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  border: Border.all(color: AppColors.hairedge),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        vehicle.vehicleTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${vehicle.clickCount}',
+                      style: const TextStyle(
+                        color: AppColors.maroon700,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'clicks',
+                      style: TextStyle(
+                        color: AppColors.moss,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+        if (report.regions.isEmpty && report.topVehicles.isEmpty)
+          const EmptyPanel(
+            icon: Icons.insights_outlined,
+            title: 'No click data yet',
+            subtitle:
+                'Views from the public site will show up here once visitors browse vehicles.',
+          ),
+      ],
     );
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { Bike, MessageCircle, Phone, ArrowUp, ChevronDown } from "lucide-react";
 
-import { getCategories, getVehicle } from "./api/api-client";
+import { getCategories, getVehicle, trackVehicleClick } from "./api/api-client";
 
 import Header from "./layout/Header";
 import HeroBanner from "./layout/HeroBanner";
@@ -96,6 +96,8 @@ function App() {
 
   function openVehicle(id: string) {
     setDetailLoading(true);
+
+    void trackVehicleClick(id, "card");
 
     getVehicle(id)
       .then(setSelectedVehicle)

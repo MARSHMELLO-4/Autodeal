@@ -13,8 +13,11 @@ import com.autodeal.ShreeGaneshAutodeal.dto.VehicleDocumentResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleImageResponse;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleRequest;
 import com.autodeal.ShreeGaneshAutodeal.dto.VehicleSummaryResponse;
+import com.autodeal.ShreeGaneshAutodeal.dto.VehicleClickReportResponse;
 import com.autodeal.ShreeGaneshAutodeal.service.CategoryService;
+import com.autodeal.ShreeGaneshAutodeal.service.VehicleClickService;
 import com.autodeal.ShreeGaneshAutodeal.service.VehicleService;
+import com.autodeal.ShreeGaneshAutodeal.service.VehicleSort;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,11 +51,14 @@ public class AdminController {
 
 	private final CategoryService categoryService;
 	private final VehicleService vehicleService;
+	private final VehicleClickService vehicleClickService;
 	private final RedisConnectionFactory redisConnectionFactory;
 
-	public AdminController(CategoryService categoryService, VehicleService vehicleService, RedisConnectionFactory redisConnectionFactory) {
+	public AdminController(CategoryService categoryService, VehicleService vehicleService,
+			VehicleClickService vehicleClickService, RedisConnectionFactory redisConnectionFactory) {
 		this.categoryService = categoryService;
 		this.vehicleService = vehicleService;
+		this.vehicleClickService = vehicleClickService;
 		this.redisConnectionFactory = redisConnectionFactory;
 	}
 
@@ -168,6 +174,21 @@ public class AdminController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 		return vehicleService.salesReport(from, to);
+	}
+
+	@GetMapping("/analytics/clicks")
+	public VehicleClickReportResponse clicksReport(
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+		return vehicleClickService.report(null, from, to);
+	}
+
+	@GetMapping("/analytics/vehicles/{id}/clicks")
+	public VehicleClickReportResponse vehicleClicksReport(
+			@PathVariable Long id,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+		return vehicleClickService.report(id, from, to);
 	}
 
 

@@ -48,3 +48,17 @@ export function getVehicle(id: string): Promise<SingleVehicleModel> {
   return request(`/api/catalog/vehicles/${id}`);
 }
 
+export async function trackVehicleClick(
+  vehicleId: string | number,
+  source: string,
+): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/catalog/vehicles/${vehicleId}/clicks?source=${encodeURIComponent(source)}`,
+      { method: "POST", keepalive: true },
+    );
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
