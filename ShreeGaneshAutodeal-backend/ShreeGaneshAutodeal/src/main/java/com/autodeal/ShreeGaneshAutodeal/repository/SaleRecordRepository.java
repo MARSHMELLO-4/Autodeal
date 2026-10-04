@@ -12,9 +12,32 @@ public interface SaleRecordRepository extends JpaRepository<SaleRecord, Long> {
 	@Query("""
 			select s from SaleRecord s
 			join fetch s.vehicle v
-			where (:fromDate is null or s.saleDate >= :fromDate)
-				and (:toDate is null or s.saleDate <= :toDate)
 			order by s.saleDate desc, s.id desc
 			""")
-	List<SaleRecord> findReportRows(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
+	List<SaleRecord> findAllReportRows();
+
+	@Query("""
+			select s from SaleRecord s
+			join fetch s.vehicle v
+			where s.saleDate >= :fromDate
+			order by s.saleDate desc, s.id desc
+			""")
+	List<SaleRecord> findReportRowsFrom(@Param("fromDate") LocalDate fromDate);
+
+	@Query("""
+			select s from SaleRecord s
+			join fetch s.vehicle v
+			where s.saleDate <= :toDate
+			order by s.saleDate desc, s.id desc
+			""")
+	List<SaleRecord> findReportRowsTo(@Param("toDate") LocalDate toDate);
+
+	@Query("""
+			select s from SaleRecord s
+			join fetch s.vehicle v
+			where s.saleDate >= :fromDate
+				and s.saleDate <= :toDate
+			order by s.saleDate desc, s.id desc
+			""")
+	List<SaleRecord> findReportRowsBetween(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
 }

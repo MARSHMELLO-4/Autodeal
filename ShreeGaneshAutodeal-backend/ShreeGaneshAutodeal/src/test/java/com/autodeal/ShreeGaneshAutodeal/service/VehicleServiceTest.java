@@ -425,7 +425,7 @@ class VehicleServiceTest {
 	class UploadDocumentTests {
 
 		@Test
-		@DisplayName("Should upload document and persist entity with formatted title")
+		@DisplayName("Should upload document with type and vehicle number title")
 		void shouldUploadDocumentSuccessfully() {
 			MockMultipartFile file = new MockMultipartFile(
 					"file", "rc_document.pdf", "application/pdf", "PDF_DATA".getBytes());
@@ -448,7 +448,7 @@ class VehicleServiceTest {
 			assertThat(response.id()).isEqualTo(10L);
 			assertThat(response.vehicleId()).isEqualTo(100L);
 			assertThat(response.type()).isEqualTo(DocumentType.RC);
-			assertThat(response.title()).isEqualTo("Royal Enfield Classic 350 MH12AB1234 - RC");
+			assertThat(response.title()).isEqualTo("RC MH12AB1234");
 			assertThat(response.fileUrl()).isEqualTo("https://supabase.co/rc_document.pdf");
 			verify(storageService).uploadVehicleDocument(100L, file);
 		}
@@ -473,7 +473,7 @@ class VehicleServiceTest {
 			VehicleDocumentResponse response = vehicleService.uploadDocument(100L, null, null, file);
 
 			assertThat(response.type()).isEqualTo(DocumentType.OTHER);
-			assertThat(response.title()).isEqualTo("Royal Enfield Classic 350 MH12AB1234 - OTHER");
+			assertThat(response.title()).isEqualTo("OTHER MH12AB1234");
 		}
 	}
 
@@ -676,7 +676,7 @@ class VehicleServiceTest {
 			LocalDate from = LocalDate.of(2026, 8, 1);
 			LocalDate to = LocalDate.of(2026, 8, 31);
 
-			when(saleRecordRepository.findReportRows(from, to)).thenReturn(List.of(sale1, sale2));
+			when(saleRecordRepository.findReportRowsBetween(from, to)).thenReturn(List.of(sale1, sale2));
 			when(vehicleRepository.countByStatus(VehicleStatus.AVAILABLE)).thenReturn(10L);
 			when(vehicleRepository.countByStatus(VehicleStatus.RESERVED)).thenReturn(2L);
 			when(vehicleRepository.countByStatus(VehicleStatus.SOLD)).thenReturn(5L);
@@ -695,7 +695,7 @@ class VehicleServiceTest {
 		@Test
 		@DisplayName("Should return zeros when no sales found")
 		void shouldReturnZerosWhenNoSales() {
-			when(saleRecordRepository.findReportRows(null, null)).thenReturn(List.of());
+			when(saleRecordRepository.findAllReportRows()).thenReturn(List.of());
 			when(vehicleRepository.countByStatus(VehicleStatus.AVAILABLE)).thenReturn(3L);
 			when(vehicleRepository.countByStatus(VehicleStatus.RESERVED)).thenReturn(0L);
 			when(vehicleRepository.countByStatus(VehicleStatus.SOLD)).thenReturn(0L);
@@ -707,6 +707,21 @@ class VehicleServiceTest {
 			assertThat(report.averageSalePrice()).isEqualByComparingTo(BigDecimal.ZERO);
 			assertThat(report.availableVehicles()).isEqualTo(3);
 			assertThat(report.sales()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("Should use open-ended repository methods when only one date is present")
+		void shouldUseOpenEndedDateFilters() {
+			LocalDate from = LocalDate.of(2026, 8, 1);
+			LocalDate to = LocalDate.of(2026, 8, 31);
+			when(saleRecordRepository.findReportRowsFrom(from)).thenReturn(List.of());
+			when(saleRecordRepository.findReportRowsTo(to)).thenReturn(List.of());
+
+			vehicleService.salesReport(from, null);
+			vehicleService.salesReport(null, to);
+
+			verify(saleRecordRepository).findReportRowsFrom(from);
+			verify(saleRecordRepository).findReportRowsTo(to);
 		}
 	}
 }

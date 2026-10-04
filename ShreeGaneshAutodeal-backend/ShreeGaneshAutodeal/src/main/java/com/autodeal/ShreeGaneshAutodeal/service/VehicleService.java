@@ -272,11 +272,12 @@ public class VehicleService {
 		StoredDocument storedDocument = storageService.uploadVehicleDocument(vehicleId, file);
 		VehicleDocument document = new VehicleDocument();
 		document.setVehicle(vehicle);
-		document.setType(type == null ? DocumentType.OTHER : type);
-		document.setTitle("%s - %s".formatted(
-				vehicle.getTitle() + " " +  vehicle.getRegistrationNumber(),
-				type == null ? "OTHER" : type.name()
-		)); //document name logic should be handled at the backend itself
+		DocumentType resolvedType = type == null ? DocumentType.OTHER : type;
+		document.setType(resolvedType);
+		String vehicleNumber = CategoryService.blankToNull(vehicle.getRegistrationNumber()) == null
+				? "VEHICLE-" + vehicle.getId()
+				: vehicle.getRegistrationNumber().trim();
+		document.setTitle("%s %s".formatted(resolvedType.name(), vehicleNumber));
 		document.setFileUrl(storedDocument.fileUrl());
 		document.setStoragePath(storedDocument.storagePath());
 		document.setContentType(storedDocument.contentType());
@@ -388,7 +389,8 @@ public class VehicleService {
 	@Cacheable(cacheNames = CacheNames.SALES_REPORTS,
 			key = "T(com.autodeal.ShreeGaneshAutodeal.config.CacheKeys).salesReport(#fromDate, #toDate)")
 	public SalesReportResponse salesReport(LocalDate fromDate, LocalDate toDate) {
-		List<SaleRecordResponse> rows = saleRecordRepository.findReportRows(fromDate, toDate).stream()
+		List<SaleRecord> sales = findSalesForReport(fromDate, toDate);
+		List<SaleRecordResponse> rows = sales.stream()
 				.map(VehicleService::toSaleResponse)
 				.toList();
 		BigDecimal totalRevenue = rows.stream()
@@ -405,6 +407,19 @@ public class VehicleService {
 				vehicleRepository.countByStatus(VehicleStatus.SOLD),
 				average,
 				rows);
+	}
+
+	private List<SaleRecord> findSalesForReport(LocalDate fromDate, LocalDate toDate) {
+		if (fromDate != null && toDate != null) {
+			return saleRecordRepository.findReportRowsBetween(fromDate, toDate);
+		}
+		if (fromDate != null) {
+			return saleRecordRepository.findReportRowsFrom(fromDate);
+		}
+		if (toDate != null) {
+			return saleRecordRepository.findReportRowsTo(toDate);
+		}
+		return saleRecordRepository.findAllReportRows();
 	}
 
 	private Vehicle getEntity(Long id) {

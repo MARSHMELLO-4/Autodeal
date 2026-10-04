@@ -324,10 +324,24 @@ class ApiClient {
   }
 
 
-  Future<SalesReport> getSalesReport() async {
+  Future<SalesReport> getSalesReport({
+    DateTime? from,
+    DateTime? to,
+  }) async {
     try {
+      final params = <String, String>{};
+
+      if (from != null) {
+        params['from'] = DateFormat('yyyy-MM-dd').format(from);
+      }
+
+      if (to != null) {
+        params['to'] = DateFormat('yyyy-MM-dd').format(to);
+      }
+
+      final query = params.isEmpty ? '' : '?${Uri(queryParameters: params).query}';
       final json = await _get(
-        '/api/admin/sales/report',
+        '/api/admin/sales/report$query',
       );
 
       return SalesReport.fromJson(
