@@ -5,12 +5,16 @@ class VehicleDocument {
       {required this.id,
       required this.title,
       required this.type,
-      required this.fileUrl});
+      required this.fileUrl,
+      this.contentType,
+      this.fileSize});
 
   final int id;
   final String title;
   final String type;
   final String fileUrl;
+  final String? contentType;
+  final int? fileSize;
 
   factory VehicleDocument.fromJson(Map<String, dynamic> json) {
     return VehicleDocument(
@@ -18,6 +22,8 @@ class VehicleDocument {
       title: json['title']?.toString() ?? '',
       type: json['type']?.toString() ?? 'OTHER',
       fileUrl: json['fileUrl']?.toString() ?? '',
+      contentType: json['contentType']?.toString(),
+      fileSize: json['fileSize'] == null ? null : toInt(json['fileSize']),
     );
   }
 }

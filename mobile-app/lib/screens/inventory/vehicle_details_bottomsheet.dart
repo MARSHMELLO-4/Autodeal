@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shree_ganesh_autodeal_admin/components/document_viewer_screen.dart';
+import 'package:shree_ganesh_autodeal_admin/components/share_document.dart';
 import 'package:shree_ganesh_autodeal_admin/components/shareVehicle.dart';
 import 'package:shree_ganesh_autodeal_admin/core/constants/colors.dart';
 import 'package:shree_ganesh_autodeal_admin/core/theme/app_theme.dart';
@@ -86,7 +87,17 @@ Future<void> showVehicleDetails(
                             for (final doc in vehicle.documents)
                               _buildDocumentTile(context, vehicle, doc),
                             const SizedBox(height: 24),
-                            _buildActions(context, vehicle, api, onChanged),
+                            _buildActions(
+                              context,
+                              vehicle,
+                              api,
+                              onChanged,
+                              () {
+                                setSheetState(() {
+                                  vehicleFuture = api.getVehicle(id);
+                                });
+                              },
+                            ),
                             const SizedBox(height: 8),
                           ],
                         ),
@@ -445,18 +456,39 @@ Widget _buildDocumentTile(
         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
       ),
       subtitle: Text(doc.type, style: const TextStyle(fontSize: 11.5)),
-      trailing: const Icon(
-        Icons.visibility_outlined,
-        color: AppColors.maroon600,
-        size: 20,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Share document',
+            visualDensity: VisualDensity.compact,
+            onPressed: () => shareDocumentFile(
+              context,
+              documentUrl: doc.fileUrl,
+              title: doc.title,
+              contentType: doc.contentType,
+            ),
+            icon: const Icon(
+              Icons.share_rounded,
+              color: AppColors.maroon600,
+              size: 20,
+            ),
+          ),
+          const Icon(
+            Icons.visibility_outlined,
+            color: AppColors.maroon600,
+            size: 20,
+          ),
+        ],
       ),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => DocumentViewerScreen(
-              imageUrl: doc.fileUrl,
+              documentUrl: doc.fileUrl,
               title: doc.title,
+              contentType: doc.contentType,
             ),
           ),
         );
@@ -466,7 +498,7 @@ Widget _buildDocumentTile(
 }
 
 Widget _buildActions(BuildContext context, Vehicle vehicle, ApiClient api,
-    Future<void> Function() onChanged) {
+    Future<void> Function() onChanged, VoidCallback onVehicleRefresh) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
@@ -476,6 +508,8 @@ Widget _buildActions(BuildContext context, Vehicle vehicle, ApiClient api,
         label: 'Upload document',
         onPressed: () async {
           await uploadDocumentFlow(context, api, vehicle.id);
+          onVehicleRefresh();
+          await onChanged();
         },
       ),
       const SizedBox(height: 10),
